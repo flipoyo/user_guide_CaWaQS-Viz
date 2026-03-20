@@ -1,0 +1,237 @@
+\documentclass[11pt, french]{book}
+\usepackage{natbib}
+\usepackage[french]{babel}
+\selectlanguage{french}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\usepackage{array}
+\usepackage{mathpazo}
+\usepackage{microtype}
+\usepackage[margin=17pt, font=small, labelfont={bf,sf}]{caption}
+\geometry{
+    verbose,
+    tmargin=3cm,
+    bmargin=3cm,
+    lmargin=1.8cm,
+    rmargin=1.8cm,
+    headheight=3cm,
+    headsep=0.5cm,
+    footskip=0.8cm
+}
+\pagestyle{empty}
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{3}
+\usepackage{verbatim}
+\usepackage{multirow}
+\usepackage{multicol}
+\usepackage{setspace}
+\setstretch{1.1}
+\usepackage{float}
+\usepackage{url}
+\usepackage{lipsum}
+\usepackage{enumitem}
+\setlist[itemize]{label=$\bullet$, nosep} % Setting default parameters for itemize env.
+
+\usepackage{amsmath}
+\usepackage{eurosym}
+\usepackage{graphicx}
+\usepackage{adjustbox}
+\usepackage{nomencl}
+\usepackage{listings}
+\providecommand{\printnomenclature}{\printglossary}
+\providecommand{\makenomenclature}{\makeglossary}
+\makenomenclature
+\makeatletter
+
+\usepackage{wrapfig}
+
+
+\providecommand{\tabularnewline}{\\}
+\usepackage{tabularx}
+\usepackage{babel}
+\usepackage{fancyhdr}
+\usepackage{color}
+\usepackage[usenames, dvipsnames, svgnames, table]{xcolor}
+\usepackage[french]{minitoc}
+\usepackage{alertmessage}
+\usepackage[
+    breaklinks=true,
+    unicode=true,
+    colorlinks=true,
+    linkcolor=tablemat,
+    citecolor=citation,
+    urlcolor=Blue
+]{hyperref}
+\hypersetup{final}
+\usepackage{cleveref}
+\crefname{figure}{Fig.}{Fig.}
+\crefname{table}{Tab.}{Tab.}
+\crefname{section}{Sec.}{Sec.}
+\crefname{equation}{Eq.}{Eq.}
+\usepackage[useregional]{datetime2}
+\DTMsetdatestyle{ddmmyyyy}
+\DTMsetup{datesep=/}
+\usepackage{sectsty}
+\allsectionsfont{\sffamily}
+\newcommand{\script}[1]{{\ttfamily\bfseries {#1}}}
+
+\definecolor{tablemat}{rgb}{0.18,0.32,0.32}
+\definecolor{citation}{rgb}{0,0,0.45}
+\definecolor{darkWhite}{rgb}{0.98,0.98,0.98}
+\definecolor{darkGreen}{rgb}{0,0.5,0}
+\pagestyle{fancy}
+\renewcommand{\headrulewidth}{1pt}
+\fancyhead[LE]{\thepage}
+\fancyhead[RE]{\textbf{\leftmark}}
+\fancyhead[RO]{\thepage}
+\fancyhead[LO]{\textbf{\rightmark}}
+\fancyfoot[L,C,R]{}
+
+% Fills pages starting from the top !
+\raggedbottom
+
+% Settings for COMM/code/command excerpts
+\lstset{aboveskip=6mm,belowskip=-3.mm,backgroundcolor=
+\color{darkWhite}
+, basicstyle=\ttfamily\footnotesize,breakatwhitespace=false, breaklines=true,captionpos=b,commentstyle=
+\color{blue}
+,deletekeywords={...},escapeinside={\%*}{*)},extendedchars=true, framexleftmargin=0pt,
+framextopmargin=2pt,framexbottommargin=2pt,frame=tb, keepspaces=true,
+keywordstyle=
+\color{blue}
+, language=C,morekeywords={*,...}, numbers=left,numbersep=3pt,numberstyle=\tiny
+\color{black}
+,rulecolor=
+\color{black}
+,showspaces=false,showstringspaces=false,showtabs=false,stepnumber=1,
+stringstyle=
+\color{gray}
+, tabsize=3, title=\lstname, morecomment=[l][
+\color{blue}
+]{!}}
+
+\lstdefinelanguage{json}{
+    basicstyle=\footnotesize\ttfamily,   % Police de base
+    commentstyle=\color{olive},          % Style des commentaires
+    keywordstyle=\color{blue},           % Style des mots-clés
+    numberstyle=\tiny\color{gray},       % Style des numéros de ligne
+    numbers=left,                        % Numérotation à gauche
+    stringstyle=\color{purple},          % Style des chaînes de caractères
+    breaklines=true,                     % Coupure automatique des lignes
+    showstringspaces=false,              % Pas d'espaces visibles dans les chaînes
+    tabsize=2,                           % Taille des tabulations
+    frame=lines,                         % Encadrement du code
+    captionpos=b,                        % Position de la légende en bas
+    aboveskip=15pt,                      % Espace avant le listing
+    belowskip=15pt,                      % Espace après le listing
+    comment=[l]{//},                     % Commentaires ligne avec //
+    morecomment=[s]{/*}{*/}              % Commentaires multi-lignes /* */
+}
+
+% Pour les notes de rédaction dans le document
+\usepackage{todonotes}
+
+\renewcommand{\lstlistingname}{Code}
+\renewcommand{\lstlistlistingname}{Liste des codes}
+
+
+
+% Alertmessage pkg command memo
+% \alertinfo{Test.}
+% \alertsuccess{Test.}
+% \alertwarning{Test.}
+% \alerterror{Test.}
+
+% Pour des entêtes de chapitre
+\usepackage[Bjornstrup]{fncychap}
+\ChRuleWidth{0.2pt}
+\ChNameVar{\Large\bfseries}
+\ChNameUpperCase
+\ChTitleVar{\bfseries\large\rm}
+\addto\captionsfrench{\def\tablename{Tableau}}
+\ChNumVar{\Large{\textbf{\color{white}{CHAPITRE}}} \fontsize{76}{80}\usefont{OT1}{pzc}{m}{n}\selectfont}
+\ChTitleVar{\raggedright\LARGE\bfseries}
+\newcommand{\colortitlechap}{\color[rgb]{1,1,1}} % color of the chapter title
+\newcommand{\colornumberchap}{\color[rgb]{0.7,0.8,0.2}} % color of the chapter number
+\newcommand{\colorbackchap}{\colorbox[rgb]{0.18,0.32,0.32}} % color of the background box (= tablemat color)
+
+% Custom setup for chapter headers
+\makeatletter
+\renewcommand{\DOCH}{%
+\settowidth{\py}{\CNoV\thechapter}
+\addtolength{\py}{-10pt}%
+\fboxsep=0pt%
+\colorbackchap{\rule{0pt}{40pt}\parbox[b]{\textwidth}{\hfill}}%
+\kern-\py\raise20pt%
+\hbox{\colornumberchap\CNoV\thechapter}\\%
+}
+
+\renewcommand{\DOTI}[1]{%
+\nointerlineskip\raggedright%
+\fboxsep=\myhi%
+\vskip-1ex%
+\colorbackchap{\parbox[t]{\mylen}{\CTV\FmTi{\colortitlechap#1}}}\par\nobreak%
+\vskip 40\p@%
+}
+
+\renewcommand{\DOTIS}[1]{%
+\fboxsep=0pt%
+\colorbackchap{\rule{0pt}{40pt}\parbox[b]{\textwidth}{\hfill}}\\%
+\nointerlineskip\raggedright%
+\fboxsep=\myhi%
+\colorbackchap{\parbox[t]{\mylen}{\CTV\FmTi{\colortitlechap#1}}}\par\nobreak%
+\vskip 40\p@%
+}
+
+
+\newcommand{\cwuserguide}{\footnote{Notice CaWaQS : \href{https://gitlab.com/cawaqs/cawaqs/-/raw/main/docs/CaWaQS_350_Documentation.pdf?ref_type=heads}{https://gitlab.com/cawaqs/cawaqs/-/raw/main/docs/CaWaQS_350_Documentation.pdf?ref_type=heads}}}
+\makeatother
+
+\usepackage{babel}
+\makeatletter
+\addto\extrasfrench{%
+\providecommand{\og}{\leavevmode\flqq~}%
+\providecommand{\fg}{\ifdim\lastskip>\z@\unskip\fi~\frqq}%
+}
+
+\makeatother
+\def\eqdeclaration#1{, voir équation\nobreakspace(#1)}
+\def\pagedeclaration#1{, page\nobreakspace#1}
+\def\nomname{Liste des symboles}
+
+% Format paysage
+\usepackage{pdflscape}
+\usepackage{subcaption}
+
+\input{shortcuts}
+
+\begin{document}
+    \frontmatter
+    \dominitoc%
+    \begin{comment}
+Début du bloc avec numérotation romaine
+\end{comment}
+
+    \include{couverture/couverture}
+
+    \include{0_introduction/introduction}
+    \include{Nouveautés}
+
+    \tableofcontents
+    {}
+
+    \listoffigures \listoftables \lstlistoflistings
+
+    
+
+    \mainmatter%
+    
+    \include{1_installation_requirements/Chap1}
+    \include{2_application_user_guide/Chap2}
+    \include{3_features/Chap3}
+    \include{4_application_scripts/Chap4}
+    \include{5_develloppeur/5_dev}
+
+    \include{bibliographie}
+\end{document}
