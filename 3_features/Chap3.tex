@@ -475,6 +475,14 @@ La boîte de dialogue \gui{Extract Data from a Sub Area} permet d’extraire les
 
 Les résultats sont enregistrés sous forme de fichiers CSV (analyses) et de fichiers NumPy contenant les données de la zone extraite. Ces fichiers permettent de relancer les analyses à partir de la configuration créée.
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\linewidth]{
+        3_features/fig/DialogExtract.png
+    }
+    \caption{Boite de dialogue \gui{Extract Data from a Sub Area} - version sans la possibilite de choisir le period}
+    \label{fig-dialogHydroRegime}
+\end{figure}
 \subsection*{Variables d’extraction}
 À partir de la boîte de dialogue, il est possible de choisir les variables suivantes pour l’extraction :
 \begin{itemize}
@@ -484,14 +492,15 @@ Les résultats sont enregistrés sous forme de fichiers CSV (analyses) et de fic
     \item Résolution de l’extraction pour le module WATBAL (à confirmer si nécessaire)
 \end{itemize}
 
+\subsection*{Typologie des sorties par compartiment}
 Les sorties dépendent des cases cochées dans la colonne de droite.
 
-\subsection*{Sorties -- Bilan hydrologique (WATBAL)}
+\subsubsection*{Sorties -- Bilan hydrologique (WATBAL)}
 \gui{Rainfall} \gui{Real EvapoTranspiration (ET)} \gui{Infiltration} \gui{Runoff} \gui{Potential EvapoTranspiration (ET)}
 
 Ces options fournissent les résultats du bilan hydrologique (WATBAL). Les données sont sauvegardées dans un fichier CSV sous forme agrégée sur toute la période de simulation, avec une valeur par cellule.
 
-\subsection*{Sorties -- Régime hydrologique (HYD)}
+\subsubsection*{Sorties -- Régime hydrologique (HYD)}
 \gui{Surface flow}
 
 \begin{itemize}
@@ -501,7 +510,7 @@ Ces options fournissent les résultats du bilan hydrologique (WATBAL). Les donn�
     \item Des fichiers NumPy sont également générés, permettant de relancer et d’approfondir les analyses sur ces données.
 \end{itemize}
 
-\subsection*{Sorties -- Aquifère}
+\subsubsection*{Sorties -- Aquifère (AQ)}
 \gui{Subsurface flow}
 
 \begin{itemize}
