@@ -1,0 +1,549 @@
+\chapter{Features and Configuration of the CaWaQS-Viz Extension}
+\label{chap-user}
+
+\renewcommand{\headrulewidth}{0.3pt}
+\fancyhead[LE]{\thepage} \fancyhead[RE]{\nouppercase{\textbf{\leftmark}}}
+\fancyhead[RO]{\thepage} \fancyhead[LO]{\nouppercase{\textbf{\rightmark}}}
+\fancyfoot[L,C,R]{}
+
+\setlength{\parindent}{0.35cm}
+
+\minitoc
+\newpage
+\
+
+\newpage
+
+% ================================================================
+
+\section{Overview}
+\label{sec-generalites}
+
+The \cwv~extension integrates several features accessible from its home dialog box (\cref{fig-cwv_home_page}):
+\begin{itemize}
+    \item a dedicated entry for configuring the \cawaqs~application (\gui{Settings}
+        - \cref{sec-config} to \ref{sec-json_config_project}) ;
+
+    \item calibration assistance tools (\gui{Calibration tools} - \cref{sec-calib-tools})
+        ;
+
+    \item features for visualizing simulated and observed flow and piezometry time series (\gui{Compare Sim/Obs} - \cref{sec-com-simobs})
+        ;
+
+    \item tools for visualizing the spatial distribution of hydrological components
+        (\gui{Spatial Maps} - \cref{sec-spatial-map}) ;
+
+    \item a hydrological budget visualization function (\gui{Budget Bar Plot}
+        - \cref{sec-bufget-barplot}) ;
+
+    \item a hydrological regime viewer (\gui{Hydrological regime} - \cref{sec-regime-hydro}).
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\linewidth]{
+        2_application_user_guide/fig/CAWAQS_VIZ_home_page.png
+    }
+    \caption{Home dialog box of the \cwv~application.}
+    \label{fig-cwv_home_page}
+\end{figure}
+
+\section{Plugin \cwv~Configuration}
+\label{sec_config}
+
+The use of the \cwv~extension is based on a pre-existing \script{GIS} project
+containing:
+\begin{itemize}
+    \item the meshes of the various \cawaqs~application modules, at the
+        modelling output resolutions;
+
+    \item observation points and/or extraction points, located within the bounds of the model extent.
+\end{itemize}
+
+The plug-in must be configured to read the various modelling output files
+and/or \cawaqs~input files as well as the various meshes. This parameterisation
+of the plug-in can be carried out in the \gui{Settings} window. To do so, two
+procedures are available:
+\begin{itemize}
+    \item import a \script{.json} configuration file established beforehand;
+
+    \item configure the project manually in the second part of the dialog box
+        shown in figure \ref{fig-DialogSettings}.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    % First figure
+    \begin{subfigure}
+        [b]{0.45\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{
+            2_application_user_guide/fig/DialogSettings_creat_project.png
+        }
+        \caption{}
+        \label{fig_DialogSettings_creat_projet}
+    \end{subfigure}
+    \hfill
+    % Second figure
+    \begin{subfigure}
+        [b]{0.45\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{
+            2_application_user_guide/fig/DialogSettings_import_project.png
+        }
+        \caption{}
+        \label{fig_DialogSettings_inport_projet}
+    \end{subfigure}
+    \caption{The \gui{Settings} dialog box of the plug-in. The \cwv~application
+    configuration method must be selected: \textbf{(a)} creation
+    of a new project \textbf{(b)} importing a project configuration. }
+    \label{fig-DialogSettings}
+\end{figure}
+
+The details of these two application configuration procedures are described
+in paragraphs \ref{sec-config-manual} and \ref{sec-json_config_project} respectively.
+
+\section{Manual Plugin Configuration: First Use}
+\label{sec-config-manual}
+
+The lower part of the \gui{Settings} dialog box allows manual configuration
+of the plug-in. The following elements must be defined:
+\begin{enumerate}
+    \item a project name;
+
+    \item the modelled compartments;
+
+    \item a GIS layer mesh configuration;
+
+    \item the modelling output and observation directories\footnote{The flow and piezometry observation directories are assumed to be in the same parent directory.} if observation points are defined in the project.
+\end{enumerate}
+
+The project name will be used to name a sub-folder created in the post-processing directory. The graphical outputs of the \cwv~application will be placed
+in this post-processing folder.\\
+
+The geometry configuration can also be imported from a \json~configuration file (by clicking on \gui{Import a geometry configuration from a \json})
+or defined manually \textit{via} the option \gui{Select resolutions from the current project}.
+
+\alertinfo{Note that any manual project and geometry configuration will be exported in \json~format to the post-processing directory upon execution of the \gui{Settings} dialog box.}
+
+\subsection{Contents of the QGIS Project Used for Processing \cawaqs~Simulation Results}
+\label{sec-res-cawaqs}
+
+\textbf{{The \script{shapefiles} of the \cawaqs~model meshes}}\\
+The QGIS project used for processing simulations with the \cwv~utility
+must contain:
+\begin{itemize}
+    \item the meshes (resolutions) of the compartments in \gui{shapefile}
+        format of the model (refer to the \cawaqs~documentation\footnote{\cawaqs~geometry terminology. For more information on the different types of meshes,
+        refer to the model documentation (\ie~user guide and technical guide),
+        available on the GitLab repository \href{https://gitlab.com/cawaqs/cawaqs}{https://gitlab.com/cawaqs/cawaqs}.}
+        to identify the output resolutions of the \gui{WATBAL} compartment).
+        The \cawaqs~resolution types to import into the GIS project for
+        processing modelling outputs depend on the compartments
+        actually being modelled;
+
+    \item the observation points of the compartments to be defined in the \cwv~extension.
+\end{itemize}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{>{\raggedleft\arraybackslash}m{3cm}|>{\centering\arraybackslash}m{3.2cm}>{\centering\arraybackslash}m{3.2cm}>{\centering\arraybackslash}m{3.2cm}>{\centering\arraybackslash}m{3.2cm}}
+        \hline
+                                                                & \textbf{Surface compartment\newline(WATBAL)}                                                               & \textbf{Hydraulic compartment \newline(HYD)} & \textbf{Unsaturated compartment \newline(NSAT)} & \textbf{Aquifer compartment \newline(AQ)} \\
+        \hline
+        \textbf{\cawaqs~resolution}                             & Unit surface cell (\texttt{ele\_bu})\footnotemark~ \newline or Production cell (\texttt{Cprod}) & River element (\texttt{ele\_musk})            & Unsaturated zone grid                     & Meshes of all aquifer layers   \\
+        \hline
+        \textbf{Required fields in the attribute table} & Cell identifiers                                                                                      & GIS identifiers of river elements          & Cell identifiers                        & Absolute cell identifiers            \\
+        \hline
+    \end{tabular}
+    \caption{\cawaqs~resolutions that can be imported as compartment resolution.}
+    \label{tab-resolution_per_compartment}
+\end{table}
+
+\alertwarning{The names of the GIS layers in the project corresponding to aquifers must be identical to those defined in the CaWaQS configuration to ensure correct application behaviour.}
+
+\textbf{{The \script{shapefiles} of extraction points}}\\
+
+Extraction of simulated flow and hydraulic head can be performed at
+extraction points. Two types of extraction points can be
+defined:
+\begin{itemize}
+    \item simple extraction points, which do not include a measurement
+        time series;
+
+    \item observation points, which are extraction points with measurement
+        data.
+\end{itemize}
+
+Extraction and observation points are contained in two separate
+\script{shapefile} files whose attribute tables contain the fields
+listed in table \ref{tab_obs_extract}.
+
+\vspace{8pt}
+
+\renewcommand{\arraystretch}{1.5} % to add spacing between rows
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}} \newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+
+\begin{table}[H]
+    \begin{tabular}{|C{0.2\textwidth}|C{0.35\textwidth}|C{0.35\textwidth}|}
+        \hline
+        \textbf{POINT TYPE}& \textbf{ATTRIBUTE TABLE CONTENTS} & \textbf{OUTPUTS} \tabularnewline                    \hline
+        \textbf{Extraction point}  & 
+        \begin{itemize}[leftmargin=*, itemsep=0.5ex]
+            \item Point name
+            \item Identifier of the attached cell\footnote{\gui{GIS ID} if extraction in the HYD compartment, \gui{ABS ID} if extraction in aquifer, optional field}, aquifer layer identifier (if extraction in aquifer)\end{itemize} & \begin{itemize}[leftmargin=*, itemsep=0.5ex]\item Simulated hydrographs and piezometric curves at the extraction point\end{itemize} \tabularnewline                     \hline
+        \textbf{Observation point} & 
+        \begin{itemize}[leftmargin=*, itemsep=0.5ex]
+            \item Point name
+            \item Identifier of the attached cell \footnotemark[\value{footnote}]
+        \end{itemize} & 
+        \begin{itemize}[leftmargin=*, itemsep=0.5ex]
+            \item Simulated and observed hydrographs and piezometric curves
+            \item Objective criteria comparing observations with simulations
+        \end{itemize} \tabularnewline \hline
+    \end{tabular}
+    \label{tab_obs_extract}
+    \caption{Structure of GIS layers for extraction points and associated graphical outputs}
+\end{table}
+
+\vspace{8pt}
+
+\alertwarning{Observation \script{shapefiles} must be imported into the project and specified in the \cwv~configuration if the HYD and/or AQ compartments are being processed. Without observations, the extension will not be functional.}
+
+\subsection{Configuring the Project Geometry from an Existing QGIS Project}
+\label{sec_config_manuelle}
+
+The geometric configuration of the \cwv~application can be defined from an existing QGIS project via the \gui{Application configuration from an existing project}
+dialog box in the application settings dialog.
+
+The window is organised into two sections:
+\begin{itemize}
+    \item on the left, the \cawaqs~compartments are listed (WATBAL, HYD, AQ,
+        NSAT),
+
+    \item on the right, the parameters to be defined are listed for producing
+        graphical outputs (flow and piezometry) at observation points
+        (extraction points with observations) or extraction points (without observations).
+\end{itemize}
+
+If the application configuration fields are left empty, the
+compartment concerned is not included in the geometric configuration.\\
+
+The compartment fields are configured as follows:\\
+
+\noindent
+\textbf{The surface compartment (\gui{"WATBAL COMPARTMENT"}) :}
+
+\vspace{0.5em}
+
+\begin{minipage}[t]{0.45\textwidth}
+    \begin{itemize}
+        \item \gui{Surface resolution}: output resolution of the surface water balance (CPROD or elebu);
+        \item \gui{cell id}: the column number in the attribute table corresponding to the cell identifier;
+        \item \gui{cell area}: the column number in the attribute table corresponding to the cell area (optional parameter).
+    \end{itemize}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.45\textwidth}
+    \centering
+    \raisebox{\dimexpr-\height+\ht\strutbox}{\includegraphics[
+        width=0.8\linewidth
+    ]{
+        2_application_user_guide/fig/DialogSelectLayer_watbal.png
+    }} \captionof{figure}{WATBAL compartment configuration fields}
+\end{minipage}
+
+\vspace{1em}
+\textbf{The hydraulic compartment (\gui{HYD COMPARTMENT})}
+
+\begin{minipage}[t]{0.45\textwidth}
+    \begin{itemize}
+        \item \gui{Hyd resolution}: name of the output resolution of the \gui{HYD} compartment (river elements);
+        \item \gui{GIS Id}: the column number in the attribute table corresponding to the GIS identifier of the cells 
+    \end{itemize}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.45\textwidth}
+    \centering
+    \raisebox{\dimexpr-\height+\ht\strutbox}{\includegraphics[
+        width=0.8\linewidth
+    ]{
+    2_application_user_guide/fig/DialogSelectLayer_hyd.png
+    }} 
+    \captionof{figure}{HYD compartment configuration fields}
+\end{minipage}
+
+\vspace{1em}
+\textbf{The unsaturated compartment (\gui{NSAT COMPARTMENT}):}
+
+\begin{minipage}[t]{0.45\textwidth}
+    \begin{itemize}
+        \item \gui{Unsatured zone resolution}: name of the output resolution of the \gui{NSAT} compartment;
+        \item \gui{cell id}: the column number in the attribute table corresponding to the cell identifier. 
+    \end{itemize}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.45\textwidth}
+    \centering
+    \raisebox{\dimexpr-\height+\ht\strutbox}{\includegraphics[
+        width=0.8\linewidth
+    ]{
+    2_application_user_guide/fig/DialogSelectLayer_nsat.png
+    }} 
+    \captionof{figure}{NSAT compartment configuration fields}
+\end{minipage}
+
+\vspace{1em}
+\textbf{The saturated compartment (\gui{AQ COMPARTMENT})}
+
+\begin{minipage}[t]{0.45\textwidth}
+     \begin{itemize}
+            \item \gui{Aquiferes resolutions}: the GIS layers constituting the
+                underground mesh. The selected layer is added by clicking
+                on \gui{Add}. Layers must be ordered from the uppermost
+                to the lowermost layer using the \gui{up} and \gui{down} buttons.
+                Finally, a layer can be removed from the list by clicking on
+                \gui{remove};
+            \item \gui{cell id abs}: identifier of the attribute table column
+                containing the absolute cell identifier. This identifier
+                can be homogeneous across GIS layers: in that case, \gui{homogeneous ID ABS}
+                must be selected. Otherwise, click on \gui{heterogeneous ID ABS}
+                to open dialog boxes allowing you to specify, for
+                each layer, the column containing the ABS ID of the cells (cf. Fig \ref{fig_id_abs_hetero}).
+        \end{itemize}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.45\textwidth}
+    \centering
+    \raisebox{\dimexpr-\height+\ht\strutbox}{\includegraphics[
+        width=0.8\linewidth
+    ]{
+    2_application_user_guide/fig/DialogSelectLayer_aq.png
+    }} 
+    \captionof{figure}{AQ compartment configuration fields}
+    \raisebox{\dimexpr-\height+\ht\strutbox}{\includegraphics[
+        width=0.5\linewidth
+    ]{
+2_application_user_guide/fig/DialogSelect_Layer_hetero_ID_ABS
+    }} 
+    \label{fig_id_abs_hetero}
+    \captionof{figure}{Window for selecting the field identifier containing the \gui{ID ABS} in the attribute table in the case of heterogeneous field identifiers across layers}
+\end{minipage}
+
+
+
+\alertwarning{Some points of caution:
+\begin{itemize}
+    \item \textbf{The identifier of the first column of an attribute table starts at 0}. The icon \includegraphics[height=0.45cm]{2_application_user_guide/fig/table.png} allows viewing the identifiers of the fields listed in the attribute table of the resolution selected in the drop-down list;
+    \item the code (e.g., BSS code) of an observation point must be \textbf{unique} among all observation points;
+    \item The geometric configuration of the compartments checked in the project parameterisation dialog box must be defined in the geometry configuration dialog box.
+\end{itemize}}
+
+\vspace{8pt}
+
+\textbf{Extraction points - \gui{Hydrological and Hydrological plots}} \\
+Extraction points can be of two types:
+\begin{itemize}
+    \item[$\bullet$] simple extraction points, which allow
+    viewing simulated variables at those points;
+    \item[$\bullet$] observation points, which allow comparing simulated variables with observation data at those points.
+\end{itemize}
+
+
+
+The configuration of extraction points requires specifying in the \gui{GIS Layer} fields the name of the layer in the QGIS project containing the observation points and extraction points according to the relevant \cws~compartment. The field identifiers to be specified are as follows: 
+\vspace{8pt}
+
+\begin{minipage}[t]{0.45\textwidth}
+    \textbf{Extraction points of the \gui{HYD} compartment} 
+    \vspace{4pt}
+
+     \underline{Extraction points}
+
+    \begin{itemize}
+        \item \gui{name}: name of the observation point;
+        \item \gui{ID GIS}: GIS identifier of the observation point to which the observation point must be attached (optional field)
+    \end{itemize}
+
+    \vspace{2pt}
+    \underline{Observation points} 
+    \begin{itemize}
+        \item \gui{code}: identification code of the observation point, must be unique for each point. The observation file for the point must have the same name with the \script{.dat} extension;
+        \item the \gui{name} and \gui{ID GIS} fields are also specified for the configuration of observation points 
+    \end{itemize}
+    \vspace{8pt}
+    \textbf{Extraction points of the \gui{AQ} compartment} 
+    \vspace{4pt}
+
+     \underline{Extraction points}
+
+    \begin{itemize}
+        \item \gui{name}: name of the observation point;
+        \item \gui{ID LAYER}: identifier of the aquifer layer
+        \item \gui{ID GIS}: GIS identifier of the observation point to which the observation point must be attached (optional field)
+    \end{itemize}
+
+    \vspace{2pt}
+    \underline{Observation points} 
+    \begin{itemize}
+        \item \gui{code}: identification code of the observation point, must be unique for each point. The observation file for the point must have the same name with the \script{.dat} extension;
+        \item the \gui{name} and \gui{ID GIS} fields are also specified for the configuration of observation points
+    \end{itemize}
+
+    
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.45\textwidth}
+    \centering
+    \raisebox{\dimexpr-\height+\ht\strutbox}{\includegraphics[
+        width=0.9\linewidth
+    ]{
+    2_application_user_guide/fig/DialogSelectLayer_hyd_extraction.png
+    }} 
+    \captionof{figure}{Configuration fields for \gui{HYD} compartment extraction points}
+    \vspace{4pt}
+    \raisebox{\dimexpr-\height+\ht\strutbox}{\includegraphics[
+        width=0.9\linewidth
+    ]{
+    2_application_user_guide/fig/DialogSelectLayer_aq_extraction
+    }} 
+    \label{fig_id_abs_hetero}
+    \captionof{figure}{Configuration fields for \gui{AQ} compartment extraction points}
+\end{minipage}
+
+\alertwarning{
+Extraction points must be contained in a \script{.shp} file different from the observation points. Points cannot be contained in the same file if they are extracted from two different compartments.
+}
+
+
+\alertinfo{
+A preliminary save of the geometry configuration file can be saved by specifying a file path in the field located at the bottom left of the dialog box. This file (\cfcod \ref{code_config_geom}) will be saved upon execution of the \gui{Settings} dialog box if the configured project does not yet exist in the post-processing
+directory specified. 
+Multiple project configurations can be saved in the same post-processing directory, provided they do not have the same project name. }
+
+
+
+\subsection{Configuring Resolutions from a \json~Configuration File}
+
+The geometric configuration of resolutions can be specified via a
+\json~file according to the following structure:
+
+\begin{lstlisting}[language=json, caption={Contents of a geometry configuration file}, label={code_config_geom}]
+{   // list of CaWaQS compartments to analyse (1 = AQ, 2 = HYD, 3 = WATBAL) 
+    "ids_compartment": [], 
+                           
+    "resolutionNames": 
+    {
+        "1": 
+            [[""]], // list of names of aquifer meshes in the QGIS project 
+        "2" : 
+            [[""]], // name of the river mesh in the QGIS project 
+        "3" : 
+            [[""]] // name of the surface mesh in the QGIS project 
+        "4" : 
+            [[""]] // name of the unsaturated zone mesh in the QGIS project 
+        }, 
+    "ids_col_cell": { // "compartment id" : "column number of cell id"
+        "1" : "",  // "AQ id" : "absolute id column number"
+        "2" : "",  //"HYD id" : "GIS id column number"
+        "3" : ""   // "WATBAL id" : "cell id column number"
+        }, 
+    "obsNames": { 
+    // "compartment id" : "name of associated obs shp in the QGIS project"
+        "1": "", 
+        "2" : ""
+        }, 
+    "obsIdsColCells": {
+    // "compartment id" : "field number of the measurement point code"
+        "1": "", 
+        "2": ""
+        }, 
+    "obsIdsColNames": { 
+    // "compartment id" : "field number of the measurement point name"
+        "1": "", 
+        "2" : ""
+        }, 
+    "obsIdsColLayers": { 
+    // "compartment id" : "field number of the aquifer layer identifier"
+        "1": "", 
+        "2" : null
+        }, 
+    "obsIdsCell": { 
+    // "comp. id" : "field number of the absolute or gis id of cell attached to obs"
+        "1" : "", 
+        "2" : null
+    }, 
+     "extNames": {
+    // "compartment id" : "name of associated extraction shp in the QGIS project"
+        "2": "",
+        "1": ""
+    },
+    "extIdsColNames": {
+    // "compartment id" : "field number containing the extraction point name"
+        "2": "",
+        "1": ""
+    },
+    "extIdsColLayers": {
+    // "compartment id" : "field number containing the aquifer layer identifier"
+        "2": null,
+        "1": ""
+    },
+    "extIdsColCells": {
+    // "compartment id" : "field number containing the cell identifier"
+        "1": "",
+        "2": "",
+    }
+}
+}
+\end{lstlisting}
+
+\subsection{Contents of the Post-Processing Directory}
+
+Upon execution of the \cwv~application parameterisation dialog box, the
+project sub-directory is created in the specified post-processing directory.
+If the project does not yet exist in this directory, a sub-directory named after
+the project will be created, containing the project and resolution configuration files
+written in \gui{json} format.
+
+\section{Project Configuration from a \json~Project Configuration File}
+\label{sec-json_config_project}
+
+Importing an external \json~file can also be used to configure
+the project. This file is structured as follows:
+
+\begin{lstlisting}[language=json]
+{
+    "json_path_geometries": str,
+    "projectName": str, 
+    "cawOutDirectory": str,
+    "startSim": int,
+    "endSim": int,
+    "obsDirectory": str,
+    "ppDirectory": str, 
+    "regime": str
+}
+\end{lstlisting}
+
+\vspace{-0.6cm}
+The contents of each object in this \json~file are as follows:
+\begin{itemize}
+    \item \gui{json\_path\_geometries}: absolute path of the resolution
+        configuration file;
+
+    \item \gui{projectName}: project name;
+
+    \item \gui{cawOutDirectory}: absolute path of the directory containing the
+        \cawaqs~modelling outputs;
+
+    \item \gui{startSim} and \gui{endSim}: simulation start and end years
+        in \script{integer} format;
+
+    \item \gui{obsDirectory}: absolute path of the parent directory containing the
+        observed time series;
+
+    \item \gui{ppDirectory}: absolute path of the post-processing directory. Note
+        that the path must already exist. Otherwise, it will not be
+        created by the application.
+
+    \item \gui{regime}: modelling regime ("Transient" or "Steady")
+\end{itemize}
