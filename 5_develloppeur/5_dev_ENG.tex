@@ -1,0 +1,298 @@
+\chapter{Developer Guidelines}
+
+\section{Code Architecture}
+The code is organised around a backend and a frontend built around the dialog box classes. The backend embeds the simulation processing features (file reading, hydrological processing, etc.) as well as the mesh element classes of \cws. "Gateway" classes for configuring the application from the QGIS instance and for navigating through simulation data and mesh elements link the backend and the frontend. 
+
+\subsection{The backend} 
+Embedding the classes (\script{Mesh}, \script{Layer}, \script{Cell}) constituting the \cws~mesh from \script{shapefile} layers present in the QGIS project, the backend also enables the hydrological processing and analysis of simulations, managed by the \script{Manage} class. The \script{Manage} processing class handles temporal (\script{Temporal}) and spatial \script{Spatial} processing of simulations as well as the calculation of hydrological and hydrogeological budgets (\script{Budget}). The \script{Compartment} class catalogues the mesh elements built with \script{Mesh}, which itself calls the \script{Mesh} class that builds the compartment layers (one layer per compartment except for the aquifer compartment). \script{Compartiment} also integrates the simulation directory paths for the hydrological variables simulated for that compartment and the observed variables directory. It also embeds as an attribute the \script{Observation} class integrating \script{ObservationPoint}s when they are specified, and the \script{Extraction} class integrating \script{ExtractionPoint}s when they exist.\\
+Finally, the \script{parameters.py} file integrates all the parameterisation variables of the \script{Manage} class inherent to the \cws~writing structure, namely the fields written in binary files, the writing formats as well as the \cws~code structure, namely compartment names, their index, the names of the output sub-directories written by \cws~during simulation, the structures of the \script{corresp\_file} files written by the \cws~platform during simulation for each compartment whose processes are simulated. The distinction of these variables allows modifying application parameters without modifying all variables across the different code classes. 
+
+\subsection{The frontend}
+The frontend consists of the application dialog box classes associated with their \script{.ui} files that define the \script{Qt} objects present in the dialog box (fields, lists, text, etc.). These dialog boxes are created from the \script{Qt Designer}\footnote{downloadable from \href{https://build-system.fman.io/qt-designer-download}{https://build-system.fman.io/qt-designer-download}} application, embedded with QGIS. Section \ref{sec_QtDesigner} explains how to use the dialog box design application and how it integrates into the \cwv~application. The application frontend directly manages calls to the backend functions and processing of the data managed by \script{ExploreData} according to user requests. A process can be executed directly upon validation of the dialog box via the \script{ok} button, upon closing the dialog box, or via another command button in the dialog box (example: the \script{SpatialMap} dialog box contains as many buttons as there are hydrological variables that can be spatialised by the \cws~application). 
+
+\subsection{The gateways}
+The gateway classes \script{ExploreData} and \script{Config} are, for the former, a class for navigating through the simulation and mesh data of a \cws~simulation, and for the latter, a class for configuring the \cws~application from a QGIS project configuration. The configuration class writes in \script{json} format the QGIS project geometric configuration (\script{config\_geometrie.json}) and the simulation project configuration (\script{config\_projet}) embedding the information necessary for processing \cws~simulations, namely the simulation periods, the simulation output directory, the observation directories when they exist, the QGIS project geometric configuration, the simulation regime and the compartments whose hydrological processes are simulated. This class then configures the \script{ExploreData} class, which calls the application backend by building the simulation compartments. 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{5_develloppeur/fig/schema_cwv.png}
+    \caption{Functional diagram of the \cwv~application}
+    \label{fig_fonctionnement_cwv}
+\end{figure}
+
+\section{Version Update} 
+
+The plugin version is specified in the \script{metadata.txt} file contained in code excerpt \ref{code_metadata}.
+\begin{lstlisting}[language=json, caption={Mandatory information to fill in the \script{metadata.txt} file}, label={code_metadata}]
+[general]
+name=CaWaQS-Viz
+qgisMinimumVersion=3.0
+description=Description
+version=0.1.16
+author=Lise-Marie GIROD (Mines Paris - PSL), Nicolas Flipo (Mines Paris - PSL)
+email=lise-marie.girod@minesparis.psl.eu
+
+about=Python QGIS-based vizualization software for CaWaQS3.x
+
+repository=https://gitlab.com/gviz/cawaqsviz
+\end{lstlisting}
+
+\section{Code Documentation} 
+
+The code documentation is published on the following link via GitLab Pages: \href{https://cawaqsviz-gviz-adf347ff6d9d45c174db091497a2dfc0f14305cdb4ed9070.gitlab.io/}{https://cawaqsviz-gviz-adf347ff6d9d45c174db091497a2dfc0f14305cdb4ed9070.gitlab.io/}. The documentation is maintained through docstrings in the application modules, following the formatting shown in the example below. 
+
+
+\begin{lstlisting}[language=Python, caption={Docstring formatting for automatic integration into code documentation}, label={code_format_docstrings}]
+class Exemple:
+    """
+    Resume des fonctionnalites de la classe.
+    """
+
+    def __init__(self, arg1):
+        """
+        Methode constructeur.
+
+        :param arg1: descriptif du parametre
+        :type arg1: str
+        """
+        self.arg1 = arg1
+
+    def do_something(self, arg1: list) -> str:
+        """
+        Descriptif de la fonction.
+
+        :param arg1: descriptif du parametre
+        :type arg1: list
+        :return: descriptif de ce que la fonction retourne
+        :rtype: str
+        """
+        return ", ".join(map(str, arg1))
+\end{lstlisting}
+\vspace{1em}
+Compilation is performed by \script{Sphinx}\footnote{whose documentation is accessible via \href{https://www.sphinx-doc.org/en/master/}{https://www.sphinx-doc.org/en/master/}}. The \script{docs/sources} directory contains the configuration files (\script{Conf.py}), as well as the documentation content. 
+When integrating new modules into the plugin, adding them to the index (\script{index.rst}) is necessary for the code docstring to appear on the documentation page. This index integrates 3 files: \script{frontend.rst}, \script{interface.rst}, \script{backend.rst}, which contain the classes to be documented. Integrating a new module into the application requires it to be added to these files in the format of code excerpt \ref{code_format_rst}. Updates to the documentation source files must be committed and synchronised with the repositories. 
+
+\begin{lstlisting}[language=Python,caption={Docstring formatting for automatic integration into code documentation}, label={code_format_rst}]
+Module
+------
+
+.. automodule:: cawaqsviz.Module
+   :members:
+   :show-inheritance:
+   :undoc-members:
+\end{lstlisting}
+
+\vspace{1em}
+
+Finally, with each new commit to the \script{Main} or 
+\script{Beta} branches, the documentation is compiled according to the content of the \script{docs/source} directory of the repository.
+
+\begin{lstlisting}
+image: python:3.9
+
+stages:
+  - build
+  - deploy
+
+before_script:
+  - pip install -U pip
+  - pip install -r requirements.txt
+
+build-docs:
+  stage: build
+  script:
+    - sphinx-build -b html docs/source public
+  artifacts:
+    paths:
+      - public
+
+pages:
+  stage: deploy
+  script:
+    - echo "Pages deployed"
+  artifacts:
+    paths:
+      - public
+  only:
+    - main  
+    - beta
+
+\end{lstlisting}
+
+\newpage
+\section{Debugging Tools}
+\subsection{The \script{Plugin Reloader} plugin}
+
+This utility allows reloading a plugin after a code modification. Thus it is not necessary to reload QGIS after each code change. 
+
+The plugin can be installed from the \script{QGIS} extension manager.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\linewidth]{5_develloppeur/fig/plugin_reloader.png}
+    \caption{Description sheet for \script{Plugin Reloader}}
+    \label{fig_plugin_reloader}
+\end{figure}
+
+\subsection{The QGIS plugin \script{First Aid}}
+
+The \script{First Aid} plugin allows investigating errors occurring during plugin execution. 
+
+
+\newpage
+\subsection{VS-Code}
+The \script{debugvs} plugin allows connecting a \script{VS-Code} debugging instance to the plugin execution from QGIS. This debugging configuration allows using all VS Code features during debugging (breakpoints, watch, call stack...). Setting up this debugging configuration is done as follows: 
+\begin{enumerate}
+    \item install \script{debugpy} with the command \script{!pip install debugpy} from the QGIS Python command prompt;
+    \item \sloppy if the plugin development directory is not located in \texttt{C://Users/$USER$/AppData//QGIS/QGIS3/profiles/default/python}, create a symbolic link in this directory pointing to the development directory.  
+    \item install the \script{debugvs} plugin by downloading its script from the GitLab repository \url{https://github.com/lmotta/debug_vs} and activate the plugin by importing the \script{.zip} folder in \script{QGIS} (\cffig \ref{fig_debugvs}); 
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.6\linewidth]{5_develloppeur/fig/debugvs.png}
+        \caption{\script{debugvs} plugin}
+        \label{fig_debugvs}
+    \end{figure}
+    \item configure VS Code to connect to QGIS during a debugging session: 
+    \begin{enumerate}
+        \item in the CaWaQS-Viz development directory, create a \script{.vscode} sub-directory (add this directory to the \script{.gitignore} file); 
+        \item create a \script{settings.json} file in the \script{.vscode} sub-directory and copy the content from code \ref{code_settings_vscode}. Optionally modify the directory paths to match your QGIS and Python installation and operating system. This one is for Windows.
+        \begin{lstlisting}[language=JSON, caption={Workspace configuration file. This file defines the Visual Studio Code workspace configuration for QGIS plugin development. It adapts the VS Code Python environment to that used by QGIS (installed via OSGeo4W).}, label=code_settings_vscode]
+        {   
+            
+            "workbench.colorCustomizations": {
+                "titleBar.activeBackground": "#006823",
+                "editor.background": "#000000"
+            },
+            
+            "python.linting.pylintEnabled": true,
+            "python.jediEnabled": true,
+        
+            
+            "python.pythonPath": "C:/OSGeo4W64/bin/python-qgis.bat",
+        
+        
+            "python.linting.pylintArgs": [
+                "--extension-pkg-whitelist=PyQt5,qgis,db_manager",
+                "--disable=all",
+                "--enable=F,E,unreachable,duplicate-key,unnecessary-semicolon,global-variable-not-assigned,unused-variable,binary-op-exception,bad-format-string,anomalous-backslash-in-string,bad-open-mode"
+            ],
+        
+           
+            "terminal.integrated.env.windows": {
+                
+                "PATH": "C:\\OSGeo4W\\apps\\qgis\\bin;C:\\OSGeo4W\\apps\\Python312;C:\\OSGeo4W\\apps\\Python312\\Scripts;C:\\OSGeo4W\\apps\\Qt5\\bin;C:\\OSGeo4W\\apps\\Python312\\Scripts;C:\\OSGeo4W\\bin;C:\\Windows\\System32;C:\\Windows;C:\\Windows\\system32\\WBem;C:\\OSGeo4W\\apps\\Python312\\lib\\site-packages\\pywin32_system32;C:\\OSGeo4W\\apps\\Python312\\lib\\site-packages\\numpy\\.libs",
+                
+                "PYTHONHOME": "C:\\OSGeo4W\\apps\\Python312",
+                "PYTHONPATH": "C:\\OSGeo4W\\apps\\qgis\\python;%PYTHONPATH%",
+                
+                "GDAL_DATA": "C:\\OSGeo4W\\share\\gdal",
+                "GDAL_DRIVER_PATH": "C:\\OSGeo4W\\bin\\gdalplugins",
+                "GDAL_FILENAME_IS_UTF8": "YES",
+                
+                "GEOTIFF_CSV": "C:\\OSGeo4W\\share\\epsg_csv",
+                
+                "O4W_QT_BINARIES": "C:/OSGeo4W/apps/Qt5/bin",
+                "O4W_QT_DOC": "C:/OSGeo4W/apps/Qt5/doc",
+                "O4W_QT_HEADERS": "C:/OSGeo4W/apps/Qt5/include",
+                "O4W_QT_LIBRARIES": "C:/OSGeo4W/apps/Qt5/lib",
+                "O4W_QT_PLUGINS": "C:/OSGeo4W/apps/Qt5/plugins",
+                "O4W_QT_PREFIX": "C:/OSGeo4W/apps/Qt5",
+                "O4W_QT_TRANSLATIONS": "C:/OSGeo4W/apps/Qt5/translations",
+                "QT_PLUGIN_PATH": "C:\\OSGeo4W\\apps\\qgis\\qtplugins;C:\\OSGeo4W\\apps\\Qt5\\plugins",
+                
+                "QGIS_PREFIX_PATH": "C:/OSGeo4W/apps/qgis",
+                
+                "VSI_CACHE": "TRUE",
+                "VSI_CACHE_SIZE": "1000000"
+            },
+            "python.languageServer": "Jedi", 
+        }
+\end{lstlisting} 
+        \item create a \script{launch.json} file in the \script{.vscode} sub-directory, copy the content from code \ref{code_launch_vscode}, modify the \script{localRoot} and \script{remoteRoot} paths to match your workspace configuration.
+        
+        \begin{lstlisting}[language=JSON, caption={VS-Code debugger configuration file. In this configuration, the "connect" section indicates the address and port on which QGIS exposes the debugging session (here localhost:5678). The "pathMappings" block establishes the correspondence between the local project paths open in VS Code (localRoot) and the paths used by QGIS to execute the plugin (remoteRoot). This correspondence is essential for breakpoints placed in VS Code to be correctly associated with the files actually executed by QGIS.}, label = code_launch_vscode]
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Attach QGIS Debug",
+            "type": "python",
+            "request": "attach",
+            "connect": {
+                "host": "localhost",
+                "port": 5678
+            },
+            "pathMappings": [
+                {
+                    "localRoot": "C:\\Program Files\\$QGIS$\\apps\\qgis-ltr\\python\\plugins\\cawaqsviz",
+                    "remoteRoot": "C:\\Users\\$USER$\\AppData\\Roaming\\QGIS\\QGIS3\\profiles\\default\\python\\cawaqsviz"
+                }
+            ],
+            "justMyCode": false
+        }
+    ]
+}
+
+
+\end{lstlisting}
+        \end{enumerate}
+    \item Establish the QGIS/VS-Code connection
+    \begin{enumerate}
+        \item authorise the debugger connection to QGIS via the \script{debugvs} plugin (\cffig \ref{fig_enable_vscode_qgis});
+        \begin{figure}[H] 
+            \centering
+            \includegraphics[width=0.40\linewidth]{5_develloppeur/fig/launch_debug_vs.png}
+            \caption{Establishing a QGIS/VS-Code connection from the \script{debugvs} plugin}
+            \label{fig_enable_vscode_qgis}
+        \end{figure}
+        \item launch the VS-Code debugging session (\cffig \ref{fig_debug_VS_CODE}).
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.5\linewidth]{5_develloppeur/fig/debug_vs_code.png}
+            \caption{Launching a debugging session from VS-Code}
+            \label{fig_debug_VS_CODE}
+        \end{figure}
+    \end{enumerate}
+\end{enumerate} 
+
+The connection between the debugger and QGIS is terminated from VS-Code by clicking on \script{"Disconnected"} in the debugging toolbar (\cffig \ref{fig_barre_outil_debbug}) 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\linewidth]{5_develloppeur/fig/disconnect-debugger.png}
+    \caption{VS-Code debugger toolbar}
+    \label{fig_barre_outil_debbug}
+\end{figure}
+
+
+
+
+\newpage
+\section{Creating Dialog Boxes with \script{Qt Designer}} 
+\ref{sec_QtDesigner}
+The \script{Qt Designer} application, provided with the QGIS installation (installation with OSGEO), is a tool for creating dialog boxes in the form of .ui files. In the \cwv~application, all dialog boxes have their own \script{.py} file to which the \script{.ui} file, of the same name, is associated with the dialog box's Python class. 
+
+\begin{lstlisting}[language = Python, label = code_init_from_ui, caption = Initialisation of the "Compare SIM/OBS" dialog box from a .ui file]
+# This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
+FORM_CLASS, _ = uic.loadUiType(
+    os.path.join(os.path.dirname(__file__), "DialogComparesimobs.ui")
+)
+
+
+class DialogComparesimobs(Dialog, FORM_CLASS):
+    def __init__(self, iface:QgisInterface, log_file_path:str, parent=None):
+        """Constructor Method
+
+        :param iface: Qgis Interface
+        :type iface: QgisInterface
+        :param logFilePath: Path of the cawaqs-viz log file, defaults to None
+        :type logFilePath: str, optional
+        :param parent: Parent class, defaults to None
+        :type parent: _type_, optional
+        """
+        super(DialogComparesimobs, self).__init__(parent)
+        self.setupUi(self)
+        self.iface = iface
+        self.logFilePath = log_file_path
+        self.simData = False
+\end{lstlisting}

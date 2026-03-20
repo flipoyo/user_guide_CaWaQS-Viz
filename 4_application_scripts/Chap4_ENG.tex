@@ -1,0 +1,79 @@
+\chapter{Code Description}
+\label{chap-description-src}
+
+\renewcommand{\headrulewidth}{0.3pt}
+\fancyhead[LE]{\thepage} \fancyhead[RE]{\nouppercase{\textbf{\leftmark}}}
+\fancyhead[RO]{\thepage} \fancyhead[LO]{\nouppercase{\textbf{\rightmark}}}
+\fancyfoot[L,C,R]{}
+
+\setlength{\parindent}{0.35cm}
+
+\minitoc
+
+% ================================================================
+
+The \cwv~plug-in is a fully-fledged Python class (\gui{cawaqs\_viz.py}).
+This class manages in particular the plug-in loading functions in the
+QGIS interface and links to the interface dialog boxes. The \cwv~plug-in is
+structured around four main classes (cf. Fig.
+\ref{fig-structure_cawaqs_viz}):
+\begin{itemize}
+    \item \gui{Compartement} and \gui{Manage} (\textit{backend}) are object management
+        classes attached to the \cawaqs~model structure. They
+        bring together all the features for analysing simulation results;
+
+    \item \gui{ExploreData} (\textit{gateway}) is a backend object management class
+        that allows navigating through the objects initialised
+        during use of the plug-in;
+
+    \item \gui{Dialog} (\textit{frontend}) is the parent class of all the plug-in
+        dialog boxes. Each simulation result calculation and analysis action
+        is launched from these dialog boxes.
+\end{itemize}
+
+Additional utilities are contained in the \gui{./tools} directory. They
+include in particular functions for managing and processing QGIS objects (functions
+for layer creation, attribute table modification, adding entities to
+an attribute table, table refresh, etc.), as well as the statistical criteria
+calculation functions called in the class methods of \gui{Manage}.\\
+
+Dialog boxes are created and modified using the \gui{QT Designer} tool,
+provided with the QGIS installation. All objects inherent to the dialog boxes
+are included \textit{via} this application. \gui{QT Designer} creates the extension
+\script{.ui} file called by the object's class. In general, this file manages
+the appearance of the dialog box and its graphical objects. Each dialog
+box is therefore a class that calls its \script{.ui} file when the class is
+initialised.\\
+
+Analysis features are activated by a specific action button or
+simply upon execution of the dialog box \textit{via} its \gui{OK} execution button. Each action button is attached to a class method of its
+dialog box. These methods call the \gui{ExploreData} class to
+navigate through initialised objects and the \gui{Manage} class if data processing
+is required. Features inherent to the use of
+QGIS objects (e.g.: displaying cartographic renderings, layer refresh, etc.)
+are directly managed by the dialog box class methods, which may
+sometimes call the additional utilities (\gui{tools}) if actions
+are shared between multiple dialog boxes.
+
+\begin{landscape}
+    \begin{figure*}
+        \centering
+        \includegraphics[width=1\linewidth]{
+            4_application_scripts/fig/schema_conceptuel_cwv.png
+        }
+        \caption{Source code structure of the \cwv~plug-in.}
+        \label{fig-structure_cawaqs_viz}
+    \end{figure*}
+\end{landscape}
+
+% \section{Backend detail}\label{sec-backend}
+
+% ...
+
+% \section{Frontend detail}\label{sec-frontend}
+
+% ...
+
+% \section{Gateway detail}\label{sec-passerelle}
+
+% ...

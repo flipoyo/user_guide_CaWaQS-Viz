@@ -1,0 +1,99 @@
+\chapter{Prerequisites and Installation}
+\label{chap-setup}
+
+\renewcommand{\headrulewidth}{0.3pt} 
+\fancyhead[LE]{\thepage} 
+\fancyhead[RE]{\nouppercase{\textbf{\leftmark}}}
+\fancyhead[RO]{\thepage} 
+\fancyhead[LO]{\nouppercase{\textbf{\rightmark}}}
+\fancyfoot[L,C,R]{}
+
+\setlength{\parindent}{0.35cm} 
+
+\minitoc
+\newpage \ \newpage  
+
+% ================================================================
+
+The \cwv~plug-in was designed to run within the QGIS Geographic Information System (GIS). It was initially developed under QGIS 3.28\footnote{Available at: \href{https://www.qgis.org/fr/site/forusers/download.html}{https://www.qgis.org/fr/site/forusers/download.html}}, and is currently used under version 3.36. Correct operation is not guaranteed for use under later versions. 
+
+\section{Dependency Installation} \label{setup-dependances}
+In its first version, \cwv~does not yet provide a dependency installer. It will therefore be necessary to install dependencies before installing \cwv. 
+
+\subsection{Installation on Microsoft Windows} \label{setup-windows}
+
+Installing dependencies on Microsoft Windows is most easily done directly using the Python interpreter integrated into QGIS. To do so, open a Python console\footnote{By clicking on \includegraphics[height=0.45cm]{1_installation_requirements/fig/interpreteur_python.png} in the QGIS interface.}
+ and type the following commands:  
+
+\begin{lstlisting}[language=python]
+>>> import pip
+>>> pip.main(['install', 'pandas', 'numpy', 'ipython', 'matplotlib', 'geopandas'])
+\end{lstlisting} 
+
+\alertinfo{Installing dependencies from a Python interpreter other than the one used by your version of QGIS will not allow QGIS to access the libraries required by the plug-in. Make sure to install the necessary dependencies from the Python interpreter built into QGIS.}
+
+\subsection{Installation on Linux} \label{setup-linux}
+Installing dependencies on a Linux distribution is done from the command terminal. Make sure to install the following dependencies: pandas, numpy, ipython, matplotlib, geopandas.
+
+
+
+\section{Standard Plugin Installation (Users)} \label{sec-install-user}
+
+The plug-in is installed \textit{via} QGIS, by importing the plug-in archive (\script{.zip}), previously downloaded from the GitLab repository (\href{https://gitlab.com/gviz/cawaqsviz}{https://gitlab.com/gviz/cawaqsviz}) of the extension (\cref{fig-download_cwv}). Once downloaded, open QGIS.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{1_installation_requirements/fig/download_gitlab.png}
+    \caption{Downloading the \cwv~archive from the \gitlab~repository web interface.}
+    \label{fig-download_cwv}
+\end{figure}
+
+In the QGIS top menu bar, click on \gui{Plugins} then \gui{Manage and Install Plugins}. The plugin management and import window opens. Select \gui{Install from ZIP} (\cref{fig-QGIS_install_from_zip}). 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{1_installation_requirements/fig/QGIS_install_from_zip.png}
+    \caption{QGIS dialog box for plugin management.}
+    \label{fig-QGIS_install_from_zip}
+\end{figure}
+
+Once the \script{.zip} file has been extracted in QGIS, it may be necessary to activate it in the same plugin management window by navigating to the \gui{Installed} panel. The \cwv~extension must be checked to appear in the QGIS toolbar (\cref{fig-CWV-activation}).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{couverture/fig/QGIS_get_plugin_in_toolbar.png}
+    \caption{Activating the \cwv~extension in the QGIS application.}
+    \label{fig-CWV-activation}
+\end{figure}
+
+Once the application is present in the QGIS toolbar, it is ready to be launched with a single click on the icon \includegraphics[height=0.45cm]{couverture/fig/Icon_CaWaQSVIZ.png}.
+
+\alertinfo{To use any new update of the plug-in in QGIS, it will be necessary to repeat this entire procedure (\cref{sec-install-user}).}
+
+\section{Developer Installation} \label{sec-install-expert}
+
+The \gitlab~repository for \cwv~can be cloned from a command terminal: 
+
+\begin{lstlisting}[language=bash]
+$ git clone https://gitlab.com/gviz/cawaqsviz
+\end{lstlisting}
+
+The application directory must be placed at the location (folder) of the native QGIS applications so that any modification of the plug-in source code can be taken into account by QGIS at startup. The QGIS directory is accessible \textit{via} the following path:
+
+\begin{lstlisting}[language=bash]
+#windows
+C:/Programmes/QGIS3.X.X.X/apps/qgis-ltr/python/plugin/
+#linux 
+/home/bin/QGIS3.X.X.X/apps/qgis-ltr/python/plugin/
+\end{lstlisting}
+
+
+The plug-in code structure is described in chapter \ref{chap-description-src}.\\
+
+\alertinfo{Autocompletion of features related to the qgis library is available provided the Python interpreter used by QGIS is used. A virtual environment can be initialised for this purpose.}
+
+\textbf{N.B.}: To facilitate plug-in development, the following utilities can be installed from the QGIS application manager:
+\begin{enumerate}
+    \item \textbf{Reloader} allows reloading the plug-in without restarting QGIS after each code modification, 
+    \item \textbf{FirstAid} provides a detailed view of errors returned by the QGIS Python interpreter as well as the various objects and variables related to the extension. 
+\end{enumerate}
