@@ -1,0 +1,34 @@
+{
+    "latex-workshop.latex.recipes": [
+        {
+            "name": "Build ENG",
+            "tools": ["latexmk_ENG"]
+        },
+        {
+            "name": "Build FR",
+            "tools": ["latexmk_FR"]
+        },
+        {
+            "name": "Build ALL",
+            "tools": ["latexmk_ENG", "latexmk_FR"]
+        }
+    ],
+    "latex-workshop.latex.tools": [
+        {
+            "name": "latexmk_ENG",
+            "command": "latexmk",
+            "args": ["-synctex=1", "-interaction=nonstopmode", "-file-line-error", "-pdf", "main_ENG.tex"]
+        },
+        {
+            "name": "latexmk_FR",
+            "command": "latexmk",
+            "args": ["-synctex=1", "-interaction=nonstopmode", "-file-line-error", "-pdf", "main_FR.tex"]
+        }
+    ],
+    "latex-workshop.latex.recipe.default": "lastUsed",
+    "latex-workshop.latex.rootFile.doNotPrompt": false,
+    "latex-workshop.latex.search.rootFiles.include": [
+        "main_FR.tex",
+        "main_ENG.tex"
+    ]
+}
