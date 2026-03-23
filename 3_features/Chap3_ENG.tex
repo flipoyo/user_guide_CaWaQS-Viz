@@ -438,56 +438,235 @@ to be analysed is to be specified in the \gui{Hydrological variable to plot} dro
 \section{\script{Extract Data from a sub area}: Extraction of Results in a Polygon}
 \label{sec-extract-area}
 
-The \gui{Extract Data from a Sub Area} dialog box allows extracting simulation results over a defined zone. This zone can be specified either as a polygon from a QGSVectorLayer loaded in the project, or as a shapefile imported from a directory.
+The \gui{Extract Data from a Sub Area} dialog box allows extracting simulation results over a defined zone. This zone can be specified either as a polygon from a \texttt{QgsVectorLayer} loaded in the project, or as a shapefile imported from a directory.
 
 Results are saved as CSV files (analyses) and NumPy files containing the data from the extracted zone. These files allow rerunning analyses from the created configuration.
 
-\subsection*{Extraction variables}
-From the dialog box, the following variables can be chosen for extraction:
+\subsection{Extraction Parameters}
+\label{sec-extract-params}
+From the dialog box, the following parameters can be specified for extraction:
 \begin{itemize}
-    \item Name of the new extraction file (also used as the name of the folder created in \texttt{PostProcessing/DATA\_EXTRACTED/})
-    \item Extraction polygon: either a shapefile (to be tested) or a QGSVectorLayer present in the project
-    \item Extraction period
-    \item Extraction resolution for the WATBAL module (to be confirmed if necessary)
+    \item Name of the new extraction file (also used as the name of the folder created in \texttt{PostProcessing/DATA\_EXTRACTED/});
+    \item Extraction polygon: either a shapefile or a \texttt{QgsVectorLayer} present in the project;
+    \item Extraction period;
+    \item Extraction resolution for the WATBAL module.
 \end{itemize}
 
+\subsection{Extraction Outputs}
+\label{sec-extract-outputs}
 The outputs depend on the boxes checked in the right-hand column.
 
-\subsection*{Outputs -- Hydrological balance (WATBAL)}
-\gui{Rainfall} \gui{Real EvapoTranspiration (ET)} \gui{Infiltration} \gui{Runoff} \gui{Potential EvapoTranspiration (ET)}
+\subsubsection{Outputs -- Hydrological Balance (WATBAL)}
+\label{sec-extract-watbal}
+The following variables can be extracted:
+\begin{itemize}
+    \item \gui{Rainfall};
+    \item \gui{Real EvapoTranspiration (ET)};
+    \item \gui{Infiltration};
+    \item \gui{Runoff};
+    \item \gui{Potential EvapoTranspiration (ET)}.
+\end{itemize}
 
 These options provide the results of the hydrological balance (WATBAL). Data are saved in a CSV file in aggregated form over the entire simulation period, with one value per cell.
 
-\subsection*{Outputs -- Hydrological regime (HYD)}
+\subsubsection{Outputs -- Hydrographic Network (HYD)}
+\label{sec-extract-hyd}
 \gui{Surface flow}
 
 \begin{itemize}
-    \item All reaches in contact with the polygon boundary are defined as extraction points.
-    \item The CSV file contains daily flow and water level data for each point located on the polygon boundary.
-    \item The sign convention for flow is: positive for inflow, negative for outflow.
+    \item All reaches in contact with the polygon boundary are defined as extraction points;
+    \item The CSV file contains daily flow and water level data for each point located on the polygon boundary;
+    \item The sign convention for flow is: positive for inflow, negative for outflow;
     \item NumPy files are also generated, allowing further analysis of these data.
 \end{itemize}
 
-\subsection*{Outputs -- Aquifer}
+\subsubsection{Outputs -- Aquifer (AQ)}
+\label{sec-extract-aq}
 \gui{Subsurface flow}
 
 \begin{itemize}
-    \item For each aquifer layer, the polygon boundaries are defined with the resolution specific to that layer.
-    \item A CSV file is generated for each layer.
-    \item Fluxes are provided at a daily scale for each face located at the aquifer boundary.
+    \item For each aquifer layer, the polygon boundaries are defined with the resolution specific to that layer;
+    \item A CSV file is generated for each layer;
+    \item Fluxes are provided at a daily scale for each face located at the aquifer boundary;
     \item Faces are named according to the convention: \texttt{nCell(ID\_ABS)\_direction\_unit}, for example: \texttt{3323\_west\_m3d}.
 \end{itemize}
 
-\subsection*{Output Organisation}
+\subsection{Output Organisation}
+\label{sec-extract-output-org}
 
-For each extraction, result files and layers are produced.
+For each extraction, result files and \texttt{QgsVectorLayer}s are produced.
 
 Files are saved in the output directory defined in the main analysis parameters:
-\texttt{PostProcessing/DATA\_EXTRACTED/<Extraction\_Name>}
-
-Contents:
+\texttt{PostProcessing/DATA\_EXTRACTED/<Extraction\_Name>} containing the following sub-folders:
 \begin{itemize}
-    \item \textbf{CONFIG/}: configuration files for rerunning simulations
-    \item \textbf{OUTPUT/}: CSV files containing the results
-    \item \textbf{TEMP/}: NumPy files used to rerun analyses
+    \item \textbf{CONFIG/}: configuration files for rerunning simulations;
+    \item \textbf{OUTPUT/}: CSV files containing the results;
+    \item \textbf{TEMP/}: NumPy files used to rerun analyses.
 \end{itemize}
+
+\subsection{Extraction GeoPackage Layers -- Column Description}
+
+When running an area extraction from the \texttt{DialogExtract} interface,
+CaWaQS-Viz produces several GeoPackage (\texttt{.gpkg}) files loaded as
+\texttt{QgsVectorLayer} in the QGIS project. Each file describes either the
+\emph{mesh} (cells or reaches inside the extracted sub-area) or the
+\emph{boundary} (edges or points where fluxes cross the extraction polygon).
+
+All GeoPackage files share one automatically generated column:
+
+\begin{description}
+    \item[\texttt{fid}] Auto-generated integer primary key, imposed by the
+        GeoPackage format specification. It is a 1-based sequential index
+        created by GDAL/OGR when GeoPandas writes the file; it carries no
+        hydrological meaning.
+\end{description}
+
+%% -----------------------------------------------------------------------
+\subsubsection{Mesh Layers}
+%% -----------------------------------------------------------------------
+
+\paragraph{Common columns across all mesh layers.}
+
+\begin{table}[h]
+\centering
+\caption{Columns common to all extraction mesh GeoPackages.}
+\label{tab:mesh_common_cols}
+\begin{tabular}{l l p{9cm}}
+\hline
+\textbf{Column} & \textbf{Type} & \textbf{Description} \\
+\hline
+\texttt{fid}          & int & GeoPackage auto-generated primary key (1-based). \\
+\texttt{ID\_ABS}      & int & 1-based sequential identifier of the cell/reach
+                               within the extracted sub-area. For multilayer
+                               compartments (e.g.\ AQ), the numbering restarts
+                               at~1 for each layer. \\
+\texttt{ORIG\_CELL\_ID} & int & Identifier linking back to the original GIS
+                                  layer loaded in the QGIS project (see
+                                  Table~\ref{tab:orig_cell_id}). \\
+\texttt{geometry}     & geom & Polygon (WATBAL, AQ) or LineString (HYD). \\
+\hline
+\end{tabular}
+\end{table}
+
+\paragraph{Origin of \texttt{ORIG\_CELL\_ID} per compartment.}
+
+\begin{table}[h]
+\centering
+\caption{Mapping of \texttt{ORIG\_CELL\_ID} to the original GIS layer.}
+\label{tab:orig_cell_id}
+\begin{tabular}{l l l p{5.5cm}}
+\hline
+\textbf{Compartment} & \textbf{GeoPackage} & \textbf{Source GIS layer} & \textbf{Source column} \\
+\hline
+WATBAL & \texttt{mesh\_wb\_\{name\}.gpkg}
+       & ELE\_BU (e.g.\ \texttt{ELE\_BU\_DrainAGR})
+       & Column defined by \texttt{ids\_col\_cell} in \texttt{config\_geometries.json}
+         for compartment~3 (WATBAL). \\
+HYD    & \texttt{mesh\_hyd\_\{name\}.gpkg}
+       & ELEMENTS\_MUSKINGUM
+       & Column defined by \texttt{ids\_col\_cell} for compartment~2 (HYD).
+         This is the GIS identifier (\texttt{ID\_GIS\_HYD}) as found in the
+         ELEMENTS\_MUSKINGUM attribute table. \\
+AQ     & \texttt{mesh\_aq\_\{name\}\_layer\{n\}.gpkg}
+       & Aquifer grid (e.g.\ \texttt{AQ\_GRID\_TERT})
+       & Column defined by \texttt{ids\_col\_cell} for compartment~1 (AQ). \\
+\hline
+\end{tabular}
+\end{table}
+
+\paragraph{Additional columns per compartment.}
+
+\begin{table}[h]
+\centering
+\caption{Compartment-specific columns in mesh GeoPackages.}
+\label{tab:mesh_extra_cols}
+\begin{tabular}{l l l p{6.5cm}}
+\hline
+\textbf{Compartment} & \textbf{Column} & \textbf{Type} & \textbf{Description} \\
+\hline
+AQ & \texttt{ID\_LAYER} & int & Index of the aquifer layer (e.g.\ 0, 1, \ldots).
+     Identifies which geological layer the cell belongs to. \\
+\hline
+\end{tabular}
+\end{table}
+
+\noindent
+WATBAL and HYD mesh layers have no additional columns beyond the common ones.
+
+%% -----------------------------------------------------------------------
+\subsubsection{Boundary Layers}
+%% -----------------------------------------------------------------------
+
+\paragraph{HYD boundary --- \texttt{hyd\_boundary\_\{name\}.gpkg}}
+
+One Point feature per reach that crosses the extraction polygon boundary.
+
+\begin{table}[h]
+\centering
+\caption{Columns of the HYD boundary GeoPackage.}
+\label{tab:hyd_boundary_cols}
+\begin{tabular}{l l p{8cm}}
+\hline
+\textbf{Column} & \textbf{Type} & \textbf{Description} \\
+\hline
+\texttt{fid}       & int  & GeoPackage auto-generated primary key. \\
+\texttt{ID\_ABS}   & int  & 1-based sequential rank of the boundary reach,
+                             matching the compact numpy row index used
+                             internally. Same ranking space as in the HYD mesh
+                             GeoPackage. \\
+\texttt{NAME}      & str  & Label \texttt{boundary\_\{rank\}}, used as extraction
+                             point name in re-analysis dialogs. \\
+\texttt{LAYER}     & int  & Always~0 (required by the
+                             \texttt{Extraction.defineExtPoints()} interface). \\
+\texttt{SIGN}      & int  & Flow direction: $+1$ = inflow (entering the
+                             sub-area), $-1$ = outflow (leaving the sub-area). \\
+\texttt{geometry}  & geom & Point at the polygon--reach intersection. \\
+\hline
+\end{tabular}
+\end{table}
+
+\paragraph{AQ boundary --- \texttt{aq\_boundary\_\{name\}\_layer\{n\}.gpkg}}
+
+One LineString feature per boundary face (shared edge between an interior
+cell and an exterior neighbour).
+
+\begin{table}[h]
+\centering
+\caption{Columns of the AQ boundary GeoPackage.}
+\label{tab:aq_boundary_cols}
+\begin{tabular}{l l p{8cm}}
+\hline
+\textbf{Column} & \textbf{Type} & \textbf{Description} \\
+\hline
+\texttt{fid}            & int  & GeoPackage auto-generated primary key. \\
+\texttt{ORIG\_CELL\_ID} & int  & CaWaQS internal cell identifier of the
+                                   boundary cell (same as in the AQ mesh
+                                   GeoPackage). \\
+\texttt{ID\_ABS}        & int  & 1-based sequential rank of the cell within
+                                   the extracted sub-area for this layer. \\
+\texttt{DIRECTION}      & str  & Cardinal direction of the boundary face
+                                   (e.g.\ \texttt{N}, \texttt{S}, \texttt{E},
+                                   \texttt{W}). \\
+\texttt{ID\_LAYER}      & int  & Index of the aquifer layer. \\
+\texttt{geometry}       & geom & LineString representing the shared edge. \\
+\hline
+\end{tabular}
+\end{table}
+
+%% -----------------------------------------------------------------------
+\subsubsection{Example: Extraction with Two Aquifer Layers}
+%% -----------------------------------------------------------------------
+
+For an extraction named \texttt{MyArea} on a project with WATBAL, HYD, and
+two AQ layers (0 and~1), the following GeoPackages are produced:
+
+\begin{enumerate}
+    \item \texttt{mesh\_wb\_MyArea.gpkg} --- WATBAL extracted cells (Polygon)
+    \item \texttt{mesh\_hyd\_MyArea.gpkg} --- HYD extracted reaches (LineString)
+    \item \texttt{hyd\_boundary\_MyArea.gpkg} --- HYD boundary crossing points (Point)
+    \item \texttt{mesh\_aq\_MyArea\_layer0.gpkg} --- AQ layer~0 extracted cells (Polygon)
+    \item \texttt{aq\_boundary\_MyArea\_layer0.gpkg} --- AQ layer~0 boundary edges (LineString)
+    \item \texttt{mesh\_aq\_MyArea\_layer1.gpkg} --- AQ layer~1 extracted cells (Polygon)
+    \item \texttt{aq\_boundary\_MyArea\_layer1.gpkg} --- AQ layer~1 boundary edges (LineString)
+\end{enumerate}
+

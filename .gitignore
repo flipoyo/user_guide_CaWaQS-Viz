@@ -6,8 +6,7 @@
 *.log
 *.lol
 *.lot
-*.mtc
-*.mtc0
+*.mtc*
 *.maf
 *.nlo
 *.out
