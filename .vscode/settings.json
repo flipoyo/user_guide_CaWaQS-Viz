@@ -30,5 +30,10 @@
     "latex-workshop.latex.search.rootFiles.include": [
         "main_FR.tex",
         "main_ENG.tex"
-    ]
+    ],
+    "latex-workshop.view.pdf.viewer": "external",
+    "latex-workshop.view.pdf.external.viewer.command": "xdg-open",
+    "latex-workshop.view.pdf.external.viewer.args": ["%PDF%"],
+    "latex-workshop.view.pdf.external.synctex.command": "xdg-open",
+    "latex-workshop.view.pdf.external.synctex.args": ["%PDF%"]
 }
