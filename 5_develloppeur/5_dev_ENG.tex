@@ -1,26 +1,109 @@
 \chapter{Developer Guidelines}
+\label{chap-dev}
 
-\section{Code Architecture}
-The code is organised around a backend and a frontend built around the dialog box classes. The backend embeds the simulation processing features (file reading, hydrological processing, etc.) as well as the mesh element classes of \cws. "Gateway" classes for configuring the application from the QGIS instance and for navigating through simulation data and mesh elements link the backend and the frontend. 
+The conceptual architecture --- the HTAS/CWV split and the three backend layers --- is described in \cref{chap-description-src}. This chapter states the \textbf{rules} a developer must follow when working within that structure, and the concrete recipes for extending the application.
 
-\subsection{The backend} 
-Embedding the classes (\script{Mesh}, \script{Layer}, \script{Cell}) constituting the \cws~mesh from \script{shapefile} layers present in the QGIS project, the backend also enables the hydrological processing and analysis of simulations, managed by the \script{Manage} class. The \script{Manage} processing class handles temporal (\script{Temporal}) and spatial \script{Spatial} processing of simulations as well as the calculation of hydrological and hydrogeological budgets (\script{Budget}). The \script{Compartment} class catalogues the mesh elements built with \script{Mesh}, which itself calls the \script{Mesh} class that builds the compartment layers (one layer per compartment except for the aquifer compartment). \script{Compartiment} also integrates the simulation directory paths for the hydrological variables simulated for that compartment and the observed variables directory. It also embeds as an attribute the \script{Observation} class integrating \script{ObservationPoint}s when they are specified, and the \script{Extraction} class integrating \script{ExtractionPoint}s when they exist.\\
-Finally, the \script{parameters.py} file integrates all the parameterisation variables of the \script{Manage} class inherent to the \cws~writing structure, namely the fields written in binary files, the writing formats as well as the \cws~code structure, namely compartment names, their index, the names of the output sub-directories written by \cws~during simulation, the structures of the \script{corresp\_file} files written by the \cws~platform during simulation for each compartment whose processes are simulated. The distinction of these variables allows modifying application parameters without modifying all variables across the different code classes. 
+\section{Architectural Rules}
+\label{sec-dev-rules}
 
-\subsection{The frontend}
-The frontend consists of the application dialog box classes associated with their \script{.ui} files that define the \script{Qt} objects present in the dialog box (fields, lists, text, etc.). These dialog boxes are created from the \script{Qt Designer}\footnote{downloadable from \href{https://build-system.fman.io/qt-designer-download}{https://build-system.fman.io/qt-designer-download}} application, embedded with QGIS. Section \ref{sec_QtDesigner} explains how to use the dialog box design application and how it integrates into the \cwv~application. The application frontend directly manages calls to the backend functions and processing of the data managed by \script{ExploreData} according to user requests. A process can be executed directly upon validation of the dialog box via the \script{ok} button, upon closing the dialog box, or via another command button in the dialog box (example: the \script{SpatialMap} dialog box contains as many buttons as there are hydrological variables that can be spatialised by the \cws~application). 
+\subsection{The hard rule: QGIS lives in the frontend only}
 
-\subsection{The gateways}
-The gateway classes \script{ExploreData} and \script{Config} are, for the former, a class for navigating through the simulation and mesh data of a \cws~simulation, and for the latter, a class for configuring the \cws~application from a QGIS project configuration. The configuration class writes in \script{json} format the QGIS project geometric configuration (\script{config\_geometrie.json}) and the simulation project configuration (\script{config\_projet}) embedding the information necessary for processing \cws~simulations, namely the simulation periods, the simulation output directory, the observation directories when they exist, the QGIS project geometric configuration, the simulation regime and the compartments whose hydrological processes are simulated. This class then configures the \script{ExploreData} class, which calls the application backend by building the simulation compartments. 
+\cwv~is split into two packages that are kept \textbf{strictly independent}: the \script{HydrologicalTwinAlphaSeries} (HTAS) scientific backend under \script{external/HydrologicalTwinAlphaSeries}, and the \script{cawaqsviz} (CWV) QGIS application on top of it. The separation is an \textbf{architectural invariant}:
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=1\linewidth]{5_develloppeur/fig/schema_cwv.png}
-    \caption{Functional diagram of the \cwv~application}
-    \label{fig_fonctionnement_cwv}
-\end{figure}
+\begin{itemize}
+    \item HTAS must \textbf{never} import \script{qgis.*}, \script{PyQt5}, \script{processing}, or anything from \script{cawaqsviz/}. If you are about to add such an import inside \script{external/HydrologicalTwinAlphaSeries/}, stop --- the work belongs on the CWV side;
+    \item CWV consumes HTAS only through its public API (the two entry gates, \cref{sec-dev-gates});
+    \item the backend is designed to be \textbf{usable from a notebook today and a server tomorrow} (\cref{sec-notebook-usage}). Anything that breaks notebook-from-pure-Python usage also breaks the future server.
+\end{itemize}
 
-\section{Version Update} 
+\subsection{The three-layer target structure}
+
+HTAS is a three-level layered architecture (\cref{sec-layers}): each level may call the level below it, never the level above.
+
+\begin{lstlisting}[language=bash, caption={Canonical entry modules per layer; imports point strictly downward.}, label={code-layers-dev}]
+L1 - HT CLIENT - MACRO        ht/client/hydrological_twin_client.py       (may import L2, L3)
+L2 - HT DEVELOPER - MICRO     ht/developer/hydrological_twin_developer.py (may import L3)
+L3 - SERVICES - ELEMENTARIES  services/                                   (imports nothing in ht/)
+\end{lstlisting}
+
+\textbf{Golden rule --- imports point downward only.} Never up, never sideways within a level. No module under \script{services/} may import from \script{ht/client/} or \script{ht/developer/}. Shared data DTOs live at the L3 leaf (\script{services/public/io\_types.py}) and are re-exported by the L2 \script{api\_types.py}, so the edge stays downward. Because every dependency points downward, the graph can never form an import loop.
+
+\textbf{Golden rule (corollary) --- L1 only orchestrates, it does not handle data.} L1 (\script{hydrological\_twin\_client.py} and, behind it, \script{operations\_client.py}) is \emph{pure orchestration}: it may only \emph{call} L2 micro-verbs and \emph{bundle} their typed results into a \script{*Result} dataclass. It must contain \textbf{no data handling of its own} --- no \script{DataFrame} construction, no array reshaping or aggregation, no unit/path/provenance shaping, no disk I/O, no domain computation. Any such logic belongs \emph{down} in an L2 micro-verb (\script{fetch}/\script{transform}/\script{render}/\script{export}, or a new \script{kind=}) or in L3 \script{services/}. The test: if a line in \script{ht/client/} does anything other than call a lower layer or pack/unpack a typed result, it is in the wrong layer.
+
+\alertwarning{The code is honest about being in transition: the clean single L2~$\rightarrow$~L3 arrow described here is the \emph{target}, not yet the literal code. See the current-state caveats below.}
+
+\noindent Two current-state caveats a developer must keep in mind:
+\begin{itemize}
+    \item inside L2, \script{ht/developer/dispatch.py} and \script{ht/developer/handlers.py} are \textbf{transitional} L2-internal modules. Today the micro-verbs route \script{hydrological\_twin\_developer.py}~$\rightarrow$~\script{dispatch.py}~$\rightarrow$~\script{handlers.py} before reaching L3; these two modules are slated to be folded into the L2 micro-verb bodies (see \script{external/HydrologicalTwinAlphaSeries/docs/TODO.md});
+    \item a few downward imports across layers (e.g. reuse of the fetch-simulation-matrix function inside several L2 methods) are tolerated for now and will be tightened later. They do not currently pose problems for notebook usage.
+\end{itemize}
+
+\section{Entry Gates}
+\label{sec-dev-gates}
+
+All frontend~$\rightarrow$~backend calls go through one of two surfaces. Do not reach around them.
+
+\subsection{Client gate --- L1 - HT CLIENT - MACRO}
+
+\script{HydrologicalTwinClient} (\script{ht/client/hydrological\_twin\_client.py}) exposes \textbf{one method per user-facing dialog operation}:
+
+\begin{itemize}
+    \item \script{budget\_barplot}, \script{hydrological\_regime};
+    \item \script{spatial\_map\_watbal}, \script{spatial\_map\_aq};
+    \item \script{compare\_sim\_obs}, \script{statistical\_criteria};
+    \item \script{mask\_watbal}, \script{mask\_hyd\_boundary}, \script{mask\_aq\_boundary}.
+\end{itemize}
+
+Plus the lifecycle methods \script{configure}, \script{load}, \script{describe}, \script{is\_ready}, and the one-shot \script{build} classmethod. Each operation wraps a full \script{fetch}~$\rightarrow$~\script{transform}~$\rightarrow$~\script{render} chain server-side and returns a typed \script{*Result} dataclass (defined in \script{ht/client/api\_types.py}, orchestrated by \script{ht/client/operations\_client.py}). \textbf{This is the surface a future HTTP server will expose:} one coarse operation = one round-trip. Frontend dialogs should prefer this gate.
+
+\subsection{Developer gate --- L2 - HT DEVELOPER - MICRO}
+
+\script{HydrologicalTwin} (\script{ht/developer/hydrological\_twin\_developer.py}) exposes the 8 canonical verbs:
+
+\begin{itemize}
+    \item lifecycle (inline): \script{configure}, \script{load}, \script{describe}, \script{export};
+    \item dispatching (routed by \script{kind=} through the transitional \script{dispatch.py}~$\rightarrow$~\script{handlers.py}, then down to L3): \script{fetch}, \script{mask}, \script{transform}, \script{render}.
+\end{itemize}
+
+State machine: \script{EMPTY}~$\rightarrow$~\script{CONFIGURED}~$\rightarrow$~\script{LOADED}~$\rightarrow$~\script{READY}. Each verb checks the state via \script{\_require\_state} and raises \script{InvalidStateError} if called too early. The developer gate is the \textbf{power-user / notebook / exploration} surface. Use it for operations not yet promoted to the client, and for low-level work; \script{ExploreData} can still reach it \textit{via} \script{client.\_twin} when needed.
+
+\section{Adding a New Dialog Operation}
+\label{sec-dev-add-op}
+
+To add a new dialog-level workflow, follow three steps:
+
+\begin{enumerate}
+    \item define a \script{*Result} dataclass in \script{ht/client/api\_types.py};
+    \item implement \script{run\_<name>} in \script{ht/client/operations\_client.py} --- it owns the \script{fetch}~$\rightarrow$~\script{transform}~$\rightarrow$~\script{render} orchestration;
+    \item add a one-line facade method on \script{HydrologicalTwinClient}, then call it from \script{ExploreData}.
+\end{enumerate}
+
+Method bodies on the client class are intentionally thin ($\leq$~5 statements). Keep them that way.
+
+\section{When Editing --- Checklist}
+\label{sec-dev-checklist}
+
+\begin{itemize}
+    \item touching dialog code? $\rightarrow$ \script{frontend/Dialog*.py}. Route through \script{ExploreData};
+    \item adding a new dialog-level workflow? $\rightarrow$ the three-step recipe above (\cref{sec-dev-add-op});
+    \item adding a new compute primitive? $\rightarrow$ \script{ht/developer/handlers.py} (compute) or \script{services/public/twin\_io.py} (L3 state reads / disk I/O); route \textit{via} \script{dispatch.py} with a new \script{kind=};
+    \item found a \script{qgis} / \script{PyQt5} import in \script{external/HydrologicalTwinAlphaSeries/}? $\rightarrow$ bug. Move it to \script{interface/} or \script{frontend/};
+    \item found a module under \script{services/} importing from \script{ht/client/} or \script{ht/developer/}? $\rightarrow$ bug. That is an \emph{upward} import; imports must point downward only;
+    \item found a frontend module reaching past \script{ExploreData} into HTAS internals? $\rightarrow$ bug. Route through the client gate;
+    \item found data handling inside \script{ht/client/} (\script{DataFrame} building, array reshaping/aggregation, unit/path shaping, disk I/O, domain math)? $\rightarrow$ bug. L1 only orchestrates.
+\end{itemize}
+
+\section{Conventions}
+\label{sec-dev-conventions}
+
+\begin{itemize}
+    \item \textbf{Environment:} \script{pixi}-managed (\script{pixi.toml}, \script{pixi.lock}). QGIS, Python, and all dependencies are pinned in a single reproducible environment (\cref{sec-install-pixi});
+    \item \textbf{Sync helpers:} \script{./verifState.sh} (diagnostics) and \script{./updateProject.sh} (ordered multi-repository / submodule sync);
+    \item \textbf{Pre-lifecycle discovery} (no twin required): \script{HydrologicalTwinClient.detect\_from\_out\_caw(...)} and \script{detect\_project\_neighbors(...)} --- static helpers used by \script{DialogSettings} to auto-fill paths before \script{configure} / \script{load};
+    \item \textbf{Compatibility shim:} \script{cawaqsviz/backend}, if present, re-exports HTAS symbols. The real implementation lives only in \script{external/HydrologicalTwinAlphaSeries/}.
+\end{itemize}
+
+\section{Version Update}
 
 The plugin version is specified in the \script{metadata.txt} file contained in code excerpt \ref{code_metadata}.
 \begin{lstlisting}[language=json, caption={Mandatory information to fill in the \script{metadata.txt} file}, label={code_metadata}]

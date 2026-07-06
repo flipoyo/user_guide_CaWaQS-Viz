@@ -547,3 +547,72 @@ The contents of each object in this \json~file are as follows:
 
     \item \gui{regime}: modelling regime ("Transient" or "Steady")
 \end{itemize}
+
+\section{Using \cwv~from a Notebook (without QGIS)}
+\label{sec-notebook-usage}
+
+The scientific backend of \cwv, \script{HydrologicalTwinAlphaSeries} (HTAS), can be driven directly from a Python notebook, \textbf{without QGIS}. This exercises the same public API that the QGIS dialogs use, on a real \cawaqs~simulation output. Beyond convenience, these notebooks are the guarantee that the backend stays QGIS-independent: anything that runs from a plain Python notebook today will also run on the future \cwv~server (\cref{chap-dev}). The notebooks live under \script{interface/notebooks/}.
+
+\subsection{Prerequisites}
+
+\begin{itemize}
+    \item a local checkout of \script{cawaqsviz} with the \script{HydrologicalTwinAlphaSeries} submodule populated (\cref{sec-install-pixi});
+    \item a readable \cawaqs~simulation output directory: the binaries under the \cawaqs~output directory, the \script{ConfigGeometry} \json~shipped with the simulation, and the matching \script{shapefiles}/\script{geopackages}.
+\end{itemize}
+
+\subsection{Setting up the environment}
+
+The recommended way is a dedicated \script{pixi} environment that pulls \script{jupyterlab} and an editable install of HTAS, but \emph{not} QGIS. From the repository root:
+
+\begin{lstlisting}[language=bash]
+pixi install -e notebook          # create the notebook environment (once)
+pixi run -e notebook notebook     # launch Jupyter Lab, rooted at interface/notebooks/
+\end{lstlisting}
+
+Jupyter Lab opens in your browser; double-click a notebook and run.
+
+\script{pixi} is only a convenience. HTAS is a standard pure-Python package (no QGIS, no conda-only dependencies), so any virtual environment with \script{jupyterlab} works:
+
+\begin{lstlisting}[language=bash]
+# venv + pip
+python -m venv .venv && source .venv/bin/activate
+pip install jupyterlab
+pip install -e external/HydrologicalTwinAlphaSeries
+jupyter lab interface/notebooks/
+\end{lstlisting}
+
+The editable install of \script{external/HydrologicalTwinAlphaSeries} pulls in HTAS's runtime dependencies (\script{geopandas}, \script{numpy}, \script{pandas}, \script{matplotlib}, \script{plotly}, \script{scipy}, \script{shapely}). The only thing \script{pixi} adds is a fully pinned, reproducible environment.
+
+\subsection{Running on a remote server}
+
+When the simulation lives on a compute server, you want the notebook to \emph{run} there (next to the data) but \emph{edit} it on your laptop. The recommended way is the VS~Code \textbf{Remote-SSH} extension, which starts the kernel on the server and opens the \script{.ipynb} as a normal editor tab --- no browser, no token, no tunnel. Register the environment once, on the server, from the repository root:
+
+\begin{lstlisting}[language=bash]
+pixi run -e notebook register-kernel
+\end{lstlisting}
+
+This makes a kernel called ``CaWaQS (pixi notebook)'' appear in the VS~Code kernel picker. You then connect with \gui{Remote-SSH: Connect to Host}, open the \script{.ipynb}, select that kernel, and run the cells.
+
+\alertinfo{If VS~Code is not available, an SSH tunnel is a working fallback: start \script{jupyter lab --no-browser} on the server, forward the port with \script{ssh -L 8888:localhost:8888}, and open the printed URL locally. See \script{interface/notebooks/README.md} for the full walkthrough.}
+
+\subsection{Choosing a template}
+
+The \script{interface/notebooks/} folder ships \textbf{two templates}. Both share the same parameters cell and the same \script{layer\_paths} contract --- they differ only in \emph{which} HTAS surface they call:
+
+\begin{itemize}
+    \item \script{template\_client.ipynb} --- the coarse, dialog-shaped API (\script{HydrologicalTwinClient}). Copy this to \textbf{reproduce what a QGIS dialog does} (e.g. \script{budget\_barplot}, \script{spatial\_map\_aq}, \script{mask\_hyd\_boundary}). This is also the surface a future HTTP server will expose;
+    \item \script{template\_developer.ipynb} --- the low-level verb API (\script{HydrologicalTwin}, verbs \script{fetch} / \script{mask} / \script{transform} / \script{render}). Copy this to \textbf{build your own pipeline}, inspect intermediate arrays, or call a primitive not yet available in the client.
+\end{itemize}
+
+Rule of thumb: \emph{``a plot that matches a QGIS dialog''} $\rightarrow$ \textbf{client}; \emph{``my own chain of operations''} $\rightarrow$ \textbf{developer}. The two surfaces are the two \emph{entry gates} of HTAS, described in the developer chapter (\cref{sec-dev-gates}).
+
+\subsection{Workflow}
+
+\begin{enumerate}
+    \item \textbf{Copy the template} --- never edit a template in place. Right-click it $\rightarrow$ \gui{Duplicate} and rename the copy (e.g. \script{seine\_2023.ipynb}).
+    \item \textbf{Edit the parameters cell only.} The rest of the notebook is designed to run unchanged.
+    \item \textbf{Clear outputs before committing.} Outputs bloat diffs and can leak paths from your machine. From the repository root:
+\begin{lstlisting}[language=bash]
+jupyter nbconvert --clear-output --inplace interface/notebooks/<your_notebook>.ipynb
+\end{lstlisting}
+\end{enumerate}
