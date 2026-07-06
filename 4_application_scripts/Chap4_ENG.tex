@@ -9,7 +9,7 @@
 \setlength{\parindent}{0.35cm}
 
 \minitoc
-
+\newpage
 % ================================================================
 
 \cwv~is built on top of a standalone scientific backend and consumes it through a well-defined public interface. Understanding the code therefore means understanding two things: how the QGIS application and the backend are kept \emph{separate}, and how the backend is internally organised into \emph{three layers}. This chapter describes both; the strict rules a developer must follow when working within this structure are collected in the developer chapter (\cref{chap-dev}).
@@ -32,14 +32,14 @@ Independence is a hard architectural constraint, not a style preference:
     \item synchronisation between the two repositories happens through version control and dependency pinning, not through code duplication.
 \end{itemize}
 
-\Cref{fig-cvz-ecosystem} situates the plug-in within the wider \cawaqs~toolchain.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{4_application_scripts/fig/cvz_ecosystem.png}
-    \caption{The \cwv~ecosystem --- position of the plug-in within the \cawaqs~toolchain.}
-    \label{fig-cvz-ecosystem}
-\end{figure}
+\begin{landscape}
+    \begin{figure}[p]
+        \centering
+        \includegraphics[width=\linewidth,height=0.85\textheight,keepaspectratio]{4_application_scripts/fig/architecture_developer_overview.png}
+        \caption{\cwv~+~HTAS architecture --- detailed component diagram with data flow (CWV HTAS in Aril 2026). NB: the 3 layers the image refer to are not the same ones were mentioned above!}
+        \label{fig-architecture-overview}
+    \end{figure}
+\end{landscape}
 
 \section{The Three Layers of the Backend}
 \label{sec-layers}
@@ -78,14 +78,6 @@ Taken together with the QGIS-side layers (frontend and interface), the roles are
 
 \script{ExploreData} calls \textbf{the client} for coarse operations (the normal path) and can still reach the developer twin \textit{via} \script{client.\_twin} for low-level micro-verb calls. A more annotated view of the data flow is given in \cref{fig-architecture-overview}.
 
-\begin{landscape}
-    \begin{figure*}
-        \centering
-        \includegraphics[width=1\linewidth]{4_application_scripts/fig/architecture_developer_overview.png}
-        \caption{\cwv~+~HTAS architecture --- detailed component diagram with data flow.}
-        \label{fig-architecture-overview}
-    \end{figure*}
-\end{landscape}
 
 \section{Example Workflow: the Budget Bar Plot}
 \label{sec-example-workflow}
