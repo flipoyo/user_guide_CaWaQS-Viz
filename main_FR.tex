@@ -215,24 +215,30 @@ Début du bloc avec numérotation romaine
 \end{comment}
 
     \include{couverture/couverture_FR}
-
+    \tableofcontents
     \include{0_introduction/introduction_FR}
     \include{Nouveautés_FR}
 
-    \tableofcontents
-    {}
-
-    \listoffigures \listoftables \lstlistoflistings
-
-    
-
     \mainmatter%
-    
+
+    \part{Guide utilisateur}
     \include{1_installation_requirements/Chap1_FR}
     \include{2_application_user_guide/Chap2_FR}
     \include{3_features/Chap3_FR}
-    \include{4_application_scripts/Chap4_FR}
-    \include{5_develloppeur/5_dev_FR}
+    \include{4_use_from_notebook/Chap4_FR}
+    \include{5_manual_configuration/manual_configuration_FR}
+
+    \part{Guide du développeur}
+    \include{6_key_concepts/key_concepts_FR}
+    \include{7_architecture/architecture_FR}
+    \include{8_development_workflow/development_workflow_FR}
+    \include{9_developer_tooling/developer_tooling_FR}
 
     \include{bibliographie_FR}
+
+    \fancyhead[RE,LO]{\nouppercase{\textbf{\leftmark}}}
+
+    \cleardoublepage \markboth{\listfigurename}{}    \listoffigures
+    \cleardoublepage \markboth{\listtablename}{}     \listoftables
+    \cleardoublepage \markboth{\lstlistlistingname}{} \lstlistoflistings
 \end{document}

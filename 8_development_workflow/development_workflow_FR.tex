@@ -1,0 +1,147 @@
+\chapter{Flux de développement}
+\label{chap-dev-workflow}
+
+\renewcommand{\headrulewidth}{0.3pt}
+\fancyhead[LE]{\thepage} \fancyhead[RE]{\nouppercase{\textbf{\leftmark}}}
+\fancyhead[RO]{\thepage} \fancyhead[LO]{\nouppercase{\textbf{\rightmark}}}
+\fancyfoot[L,C,R]{}
+
+\setlength{\parindent}{0.35cm}
+
+\minitoc
+% ================================================================
+
+Ce chapitre rassemble les \textbf{règles et processus} qu'un développeur doit suivre en travaillant sur \cwv~: comment étendre l'application avec une nouvelle opération, la liste de contrôle à parcourir avant de committer, les conventions du projet, et comment le versionnage et la documentation du code sont gérés.
+
+\section{Ajouter une nouvelle opération de dialogue}
+\label{sec-dev-add-op}
+
+Pour ajouter un nouveau flux au niveau dialogue, suivez trois étapes :
+
+\begin{enumerate}
+    \item définissez une dataclass \script{*Result} dans \script{ht/client/api\_types.py} ;
+    \item implémentez \script{run\_<name>} dans \script{ht/client/operations\_client.py} --- il possède l'orchestration \script{fetch}~$\rightarrow$~\script{transform}~$\rightarrow$~\script{render} ;
+    \item ajoutez une méthode de façade d'une ligne sur \script{HydrologicalTwinClient}, puis appelez-la depuis \script{ExploreData}.
+\end{enumerate}
+
+Les corps de méthode sur la classe client sont volontairement minces ($\leq$~5 instructions). Gardez-les ainsi.
+
+\section{Lors d'une modification --- liste de contrôle}
+\label{sec-dev-checklist}
+
+\begin{itemize}
+    \item vous touchez au code d'une boîte de dialogue ? $\rightarrow$ \script{frontend/Dialog*.py}. Passez par \script{ExploreData} ;
+    \item vous ajoutez un nouveau flux au niveau dialogue ? $\rightarrow$ la recette en trois étapes ci-dessus (\cref{sec-dev-add-op}) ;
+    \item vous ajoutez une nouvelle primitive de calcul ? $\rightarrow$ \script{ht/developer/handlers.py} (calcul) ou \script{services/public/twin\_io.py} (lectures d'état L3 / E/S disque) ; routez \textit{via} \script{dispatch.py} avec un nouveau \script{kind=} ;
+    \item vous avez trouvé un import \script{qgis} / \script{PyQt5} dans \script{external/HydrologicalTwinAlphaSeries/} ? $\rightarrow$ bug. Déplacez-le vers \script{interface/} ou \script{frontend/} ;
+    \item vous avez trouvé un module sous \script{services/} qui importe depuis \script{ht/client/} ou \script{ht/developer/} ? $\rightarrow$ bug. C'est un import \emph{ascendant} ; les imports doivent pointer uniquement vers le bas ;
+    \item vous avez trouvé un module frontend qui contourne \script{ExploreData} pour atteindre les internes de HTAS ? $\rightarrow$ bug. Passez par la porte client ;
+    \item vous avez trouvé une manipulation de données dans \script{ht/client/} (construction de \script{DataFrame}, remise en forme/agrégation de tableaux, mise en forme d'unités/chemins, E/S disque, maths du domaine) ? $\rightarrow$ bug. L1 ne fait qu'orchestrer.
+\end{itemize}
+
+\section{Conventions}
+\label{sec-dev-conventions}
+
+\begin{itemize}
+    \item \textbf{Environnement :} géré par \script{pixi} (\script{pixi.toml}, \script{pixi.lock}). QGIS, Python et toutes les dépendances sont figés dans un unique environnement reproductible (\cref{sec-install-pixi}) ;
+    \item \textbf{Aides à la synchronisation :} \script{./verifState.sh} (diagnostics) et \script{./updateProject.sh} (synchronisation ordonnée multi-dépôts / sous-modules) ;
+    \item \textbf{Découverte pré-cycle-de-vie} (sans jumeau requis) : \script{HydrologicalTwinClient.detect\_from\_out\_caw(...)} et \script{detect\_project\_neighbors(...)} --- aides statiques utilisées par \script{DialogSettings} pour pré-remplir les chemins avant \script{configure} / \script{load} ;
+    \item \textbf{Cale de compatibilité :} \script{cawaqsviz/backend}, si présent, ré-exporte les symboles HTAS. L'implémentation réelle ne vit que dans \script{external/HydrologicalTwinAlphaSeries/}.
+\end{itemize}
+
+\section{Mise à jour de version}
+
+La version du plug-in est spécifiée dans le fichier \script{metadata.txt} figurant dans l'extrait de code \ref{code_metadata}.
+\begin{lstlisting}[language=json, caption={Informations obligatoires à renseigner dans le fichier \script{metadata.txt}}, label={code_metadata}]
+[general]
+name=CaWaQS-Viz
+qgisMinimumVersion=3.0
+description=Description
+version=0.1.16
+author=Lise-Marie GIROD (Mines Paris - PSL), Nicolas Flipo (Mines Paris - PSL)
+email=lise-marie.girod@minesparis.psl.eu
+
+about=Python QGIS-based vizualization software for CaWaQS3.x
+
+repository=https://gitlab.com/gviz/cawaqsviz
+\end{lstlisting}
+
+\section{Documentation du code}
+
+La documentation du code est publiée à l'adresse suivante via GitLab Pages : \href{https://cawaqsviz-gviz-adf347ff6d9d45c174db091497a2dfc0f14305cdb4ed9070.gitlab.io/}{https://cawaqsviz-gviz-adf347ff6d9d45c174db091497a2dfc0f14305cdb4ed9070.gitlab.io/}. La documentation est maintenue à travers les docstrings des modules de l'application, en suivant le formatage montré dans l'exemple ci-dessous.
+
+
+\begin{lstlisting}[language=Python, caption={Formatage des docstrings pour l'intégration automatique dans la documentation du code}, label={code_format_docstrings}]
+class Exemple:
+    """
+    Resume des fonctionnalites de la classe.
+    """
+
+    def __init__(self, arg1):
+        """
+        Methode constructeur.
+
+        :param arg1: descriptif du parametre
+        :type arg1: str
+        """
+        self.arg1 = arg1
+
+    def do_something(self, arg1: list) -> str:
+        """
+        Descriptif de la fonction.
+
+        :param arg1: descriptif du parametre
+        :type arg1: list
+        :return: descriptif de ce que la fonction retourne
+        :rtype: str
+        """
+        return ", ".join(map(str, arg1))
+\end{lstlisting}
+\vspace{1em}
+La compilation est réalisée par \script{Sphinx}\footnote{dont la documentation est accessible via \href{https://www.sphinx-doc.org/en/master/}{https://www.sphinx-doc.org/en/master/}}. Le répertoire \script{docs/sources} contient les fichiers de configuration (\script{Conf.py}), ainsi que le contenu de la documentation. Lors de l'intégration de nouveaux modules dans le plug-in, leur ajout à l'index (\script{index.rst}) est nécessaire pour que la docstring du code apparaisse sur la page de documentation. Cet index intègre 3 fichiers : \script{frontend.rst}, \script{interface.rst}, \script{backend.rst}, qui contiennent les classes à documenter. L'intégration d'un nouveau module dans l'application requiert son ajout à ces fichiers au format de l'extrait de code \ref{code_format_rst}. Les mises à jour des fichiers sources de la documentation doivent être committées et synchronisées avec les dépôts.
+
+\begin{lstlisting}[language=Python,caption={Formatage des docstrings pour l'intégration automatique dans la documentation du code}, label={code_format_rst}]
+Module
+------
+
+.. automodule:: cawaqsviz.Module
+   :members:
+   :show-inheritance:
+   :undoc-members:
+\end{lstlisting}
+
+\vspace{1em}
+
+Enfin, à chaque nouveau commit sur les branches \script{Main} ou \script{Beta}, la documentation est compilée selon le contenu du répertoire \script{docs/source} du dépôt.
+
+\begin{lstlisting}
+image: python:3.9
+
+stages:
+  - build
+  - deploy
+
+before_script:
+  - pip install -U pip
+  - pip install -r requirements.txt
+
+build-docs:
+  stage: build
+  script:
+    - sphinx-build -b html docs/source public
+  artifacts:
+    paths:
+      - public
+
+pages:
+  stage: deploy
+  script:
+    - echo "Pages deployed"
+  artifacts:
+    paths:
+      - public
+  only:
+    - main
+    - beta
+
+\end{lstlisting}

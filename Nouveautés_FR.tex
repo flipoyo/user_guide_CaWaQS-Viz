@@ -1,4 +1,4 @@
-\chapter*{Nouveautés} 
+\chapter*{Nouveautés}
 \addstarredchapter{\textbf{Nouveautés}}
 
 Voici la liste des derniers correctifs et des dernières implémentations de fonctionnalité dans l'application \cwv.
@@ -6,30 +6,22 @@ Voici la liste des derniers correctifs et des dernières implémentations de fon
 \begin{table}[H]
     \centering
     \begin{tabular}{>{\raggedright}p{3.25cm}>{\raggedright}p{12cm}>{\raggedright}p{2cm}}
-    \hline 
+    \hline
     \textbf{Type/Tag} & \textbf{Description} & \textbf{Section}\tabularnewline
-    \hline 
-    \newfeature & Intégration d'un maillage aquifère où les identifiants de colonnes contenant les identifiants absolus des mailles sont différents entre les shapefiles & Sec. \ref{sec_config_manuelle} \tabularnewline
+    \hline
+    \newfeature & Séparation du backend et du frontend dans deux dépôts distincts reliés par des API. Le backend constitue la première version du Jumeau Hydrologique : Hydrological Twin Alpha Series (HTAS) & Sec. \ref{sec-generalites} \tabularnewline
     \arrayrulecolor{lightgray} \hline
-    \newfeature & Paramétrisation de l'application avec des points d'extraction sans données d'observation & Sec. \ref{sec_config_manuelle} \tabularnewline
+    \newfeature & Automatisation de la configuration : seul le répertoire de sorties CaWaQS est nécessaire & Sec. \ref{sec_config_manuelle} \tabularnewline
     \arrayrulecolor{lightgray} \hline
-    \newfeature & Configuration de l'application sans répertoire de données d'observation & Sec. \ref{sec_config_manuelle} \tabularnewline
-    \arrayrulecolor{black} \tabularnewline
+    \newfeature & Extraction par masque. Découpage des résultats sur une sous-zone à partir d'un shapefile & Sec. \ref{sec-extract-area} \tabularnewline
     \arrayrulecolor{lightgray} \hline
-    \newfeature & Calcul de critère statistique global et par unité aquifère & Sect. \ref{sec_stats_crits} \tabularnewline
-    \arrayrulecolor{black} \hline
     \end{tabular}
-    \caption{Dernières implémentations de fonctionnalité dans l'application}
+    \caption{Dernières implémentations dans l'application}
 \end{table}
 
 
 
 
-\textbf{Dernières releases :} \\ 
+\textbf{Derniers tags stables :} \\
 
-\href{https://gitlab.com/cawaqs/gviz/cawaqsviz/-/releases}{\cwv ~0.1.14} : \release ~ (20 Mars 2025) : Première version stable de \cwv~
-
-\href{https://gitlab.com/cawaqs/gviz/cawaqsviz/-/releases}{\cwv ~0.1.16} : \betarelease ~ (30 juillet 2025) : version de développement 
-
-
-
+Tag CWV\_alpha\_3.72 : \href{https://gitlab.com/cawaqs/gviz/cawaqsviz/-/tree/CWV_alpha_3.72?ref_type=tags}{Lien} ~ (05 juin 2026) : tag stable de \cwv{} couplé à HTAS.
