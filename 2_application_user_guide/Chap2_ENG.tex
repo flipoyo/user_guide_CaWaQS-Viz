@@ -1,4 +1,4 @@
-\chapter{Features and Configuration of the CaWaQS-Viz Extension}
+\chapter{Configuration}
 \label{chap-user}
 
 \renewcommand{\headrulewidth}{0.3pt}
@@ -18,7 +18,7 @@
 The \cwv~extension integrates several features accessible from its home dialog box (\cref{fig-cwv_home_page}):
 \begin{itemize}
     \item a dedicated entry for configuring the \cawaqs~application (\gui{Settings}
-        - \cref{sec-config} to \ref{sec-json_config_project}) ;
+        - \cref{sec_config} to \ref{sec-json_config_project}) ;
 
     \item calibration assistance tools (\gui{Calibration tools} - \cref{sec-calib-tools})
         ;
@@ -44,9 +44,6 @@ The \cwv~extension integrates several features accessible from its home dialog b
     \label{fig-cwv_home_page}
 \end{figure}
 
-\section{Plugin \cwv~Configuration}
-\label{sec_config}
-
 The use of the \cwv~extension is based on a pre-existing \script{GIS} project
 containing:
 \begin{itemize}
@@ -56,15 +53,17 @@ containing:
     \item observation points and/or extraction points, located within the bounds of the model extent.
 \end{itemize}
 
+\subsection{Mode of \cwv~Configuration}
+\label{sec_config}
+
 The plug-in must be configured to read the various modelling output files
 and/or \cawaqs~input files as well as the various meshes. This parameterisation
 of the plug-in can be carried out in the \gui{Settings} window. To do so, two
-procedures are available:
+procedures are available \ref{fig-DialogSettings}:
 \begin{itemize}
-    \item import a \script{.json} configuration file established beforehand;
+     \item FIRST TIME: configure the project manually in the second part of the dialog box (section \ref{sec-auto-detection}).
+    \item ALREADY SET: import a \script{.json} configuration file established beforehand (section \ref{sec-json_config_project}).;
 
-    \item configure the project manually in the second part of the dialog box
-        shown in figure \ref{fig-DialogSettings}.
 \end{itemize}
 
 \begin{figure}[H]
@@ -77,7 +76,7 @@ procedures are available:
 \end{figure}
 
 The details of these two application configuration procedures are described
-in paragraphs \ref{sec-config-manual} and \ref{sec-json_config_project} respectively.
+in paragraphs \ref{sec-auto-detection} and \ref{sec-json_config_project} respectively.
 
 % ================================================================
 % Automatic detection of project settings from the file system.
@@ -86,7 +85,7 @@ in paragraphs \ref{sec-config-manual} and \ref{sec-json_config_project} respecti
 % Drop into Chap2 with \input, or \include as its own file.
 % ================================================================
 
-\subsection{Automatic Detection of Project Settings}
+\section{Automatic Detection of Project Settings}
 \label{sec-auto-detection}
 
 When configuring a project manually (rather than importing a
@@ -222,8 +221,11 @@ The expected neighbourhood of the project file is:
     browse field.}
 
 % ----------------------------------------------------------------
-\subsection{Where the resulting configuration is saved}
-\label{ssec-auto-saved}
+
+
+
+\section{Project Configuration from a \json~File}
+\label{sec-json_config_project}
 
 Once a project has been configured (whether by automatic detection or by
 hand), its configuration is written as \script{.json} files under
@@ -231,16 +233,10 @@ hand), its configuration is written as \script{.json} files under
 \script{config\_project\_<name>.json} and
 \script{config\_geometries\_<name>.json}. These files can later be
 re-imported directly through the first configuration procedure, bypassing
-detection entirely.
-
-\subsection{Project Configuration from a \json~Project Configuration File}
-\label{sec-json_config_project}
+detection entirely. 
 
 Importing an external \json~file can also be used to configure
-the project. This file is automatically saved into the Postprocessing directory of a project after its first configuration, as described in the following section. 
-
-
-\section{Contents of the Post-Processing Directory}
+the project. This file is automatically saved into the Postprocessing directory of a project after its first configuration. 
 
 Upon execution of the \cwv~application parameterisation dialog box, the
 project sub-directory is created in the specified post-processing directory.
@@ -248,11 +244,8 @@ If the project does not yet exist in this directory, a sub-directory named after
 the project will be created, containing the project and resolution configuration files
 written in \gui{json} format.
 
-\section{Project Configuration from a \json~Project Configuration File}
-\label{sec-json_config_project}
 
-Importing an external \json~file can also be used to configure
-the project. This file is structured as follows:
+ This project configuration \json~file is structured as follows:
 
 \begin{lstlisting}[language=json]
 {
@@ -290,72 +283,3 @@ The contents of each object in this \json~file are as follows:
 
     \item \gui{regime}: modelling regime ("Transient" or "Steady")
 \end{itemize}
-
-\section{Using \cwv~from a Notebook (without QGIS)}
-\label{sec-notebook-usage}
-
-The scientific backend of \cwv, \script{HydrologicalTwinAlphaSeries} (HTAS), can be driven directly from a Python notebook, \textbf{without QGIS}. This exercises the same public API that the QGIS dialogs use, on a real \cawaqs~simulation output. Beyond convenience, these notebooks are the guarantee that the backend stays QGIS-independent: anything that runs from a plain Python notebook today will also run on the future \cwv~server (\cref{chap-dev}). The notebooks live under \script{interface/notebooks/}.
-
-\subsection{Prerequisites}
-
-\begin{itemize}
-    \item a local checkout of \script{cawaqsviz} with the \script{HydrologicalTwinAlphaSeries} submodule populated (\cref{sec-install-pixi});
-    \item a readable \cawaqs~simulation output directory: the binaries under the \cawaqs~output directory, the \script{ConfigGeometry} \json~shipped with the simulation, and the matching \script{shapefiles}/\script{geopackages}.
-\end{itemize}
-
-\subsection{Setting up the environment}
-
-The recommended way is a dedicated \script{pixi} environment that pulls \script{jupyterlab} and an editable install of HTAS, but \emph{not} QGIS. From the repository root:
-
-\begin{lstlisting}[language=bash]
-pixi install -e notebook          # create the notebook environment (once)
-pixi run -e notebook notebook     # launch Jupyter Lab, rooted at interface/notebooks/
-\end{lstlisting}
-
-Jupyter Lab opens in your browser; double-click a notebook and run.
-
-\script{pixi} is only a convenience. HTAS is a standard pure-Python package (no QGIS, no conda-only dependencies), so any virtual environment with \script{jupyterlab} works:
-
-\begin{lstlisting}[language=bash]
-# venv + pip
-python -m venv .venv && source .venv/bin/activate
-pip install jupyterlab
-pip install -e external/HydrologicalTwinAlphaSeries
-jupyter lab interface/notebooks/
-\end{lstlisting}
-
-The editable install of \script{external/HydrologicalTwinAlphaSeries} pulls in HTAS's runtime dependencies (\script{geopandas}, \script{numpy}, \script{pandas}, \script{matplotlib}, \script{plotly}, \script{scipy}, \script{shapely}). The only thing \script{pixi} adds is a fully pinned, reproducible environment.
-
-\subsection{Running on a remote server}
-
-When the simulation lives on a compute server, you want the notebook to \emph{run} there (next to the data) but \emph{edit} it on your laptop. The recommended way is the VS~Code \textbf{Remote-SSH} extension, which starts the kernel on the server and opens the \script{.ipynb} as a normal editor tab --- no browser, no token, no tunnel. Register the environment once, on the server, from the repository root:
-
-\begin{lstlisting}[language=bash]
-pixi run -e notebook register-kernel
-\end{lstlisting}
-
-This makes a kernel called ``CaWaQS (pixi notebook)'' appear in the VS~Code kernel picker (select Kernel>jupyter Kernel> CaWaQS (pixi notebook)). You then connect with \gui{Remote-SSH: Connect to Host}, open the \script{.ipynb}, select that kernel, and run the cells.
-
-\alertinfo{If VS~Code is not available, an SSH tunnel is a working fallback: start \script{jupyter lab --no-browser} on the server, forward the port with \script{ssh -L 8888:localhost:8888}, and open the printed URL locally. See \script{interface/notebooks/README.md} for the full walkthrough.}
-
-\subsection{Choosing a template}
-
-The \script{interface/notebooks/} folder ships \textbf{two templates}. Both share the same parameters cell and the same \script{layer\_paths} contract --- they differ only in \emph{which} HTAS surface they call:
-
-\begin{itemize}
-    \item \script{template\_client.ipynb} --- the coarse, dialog-shaped API (\script{HydrologicalTwinClient}). Copy this to \textbf{reproduce what a QGIS dialog does} (e.g. \script{budget\_barplot}, \script{spatial\_map\_aq}, \script{mask\_hyd\_boundary}). This is also the surface a future HTTP server will expose;
-    \item \script{template\_developer.ipynb} --- the low-level verb API (\script{HydrologicalTwin}, verbs \script{fetch} / \script{mask} / \script{transform} / \script{render}). Copy this to \textbf{build your own pipeline}, inspect intermediate arrays, or call a primitive not yet available in the client.
-\end{itemize}
-
-Rule of thumb: \emph{``a plot that matches a QGIS dialog''} $\rightarrow$ \textbf{client}; \emph{``my own chain of operations''} $\rightarrow$ \textbf{developer}. The two surfaces are the two \emph{entry gates} of HTAS, described in the developer chapter (\cref{sec-dev-gates}).
-
-\subsection{Workflow}
-
-\begin{enumerate}
-    \item \textbf{Copy the template} --- never edit a template in place. Right-click it $\rightarrow$ \gui{Duplicate} and rename the copy (e.g. \script{seine\_2023.ipynb}).
-    \item \textbf{Edit the parameters cell only.} The rest of the notebook is designed to run unchanged.
-    \item \textbf{Clear outputs before committing.} Outputs bloat diffs and can leak paths from your machine. From the repository root:
-\begin{lstlisting}[language=bash]
-jupyter nbconvert --clear-output --inplace interface/notebooks/<your_notebook>.ipynb
-\end{lstlisting}
-\end{enumerate}
