@@ -1,4 +1,4 @@
-\documentclass[11pt, english]{book}
+\documentclass[11pt, english, openany]{book}
 \usepackage{natbib}
 \usepackage[english]{babel}
 \selectlanguage{english}
@@ -205,13 +205,8 @@ Start of block with roman numbering
 
     \include{couverture/couverture_ENG}
     \tableofcontents
-    {}
     \include{0_introduction/introduction_ENG}
     \include{Nouveautes_ENG}
-
-    \listoffigures \listoftables \lstlistoflistings
-
-    
 
     \mainmatter%
     
@@ -222,4 +217,10 @@ Start of block with roman numbering
     \include{5_develloppeur/5_dev_ENG}
 
     \include{bibliographie_ENG}
+
+    \fancyhead[RE,LO]{\nouppercase{\textbf{\leftmark}}}
+
+    \cleardoublepage \markboth{\listfigurename}{}    \listoffigures
+    \cleardoublepage \markboth{\listtablename}{}     \listoftables
+    \cleardoublepage \markboth{\lstlistlistingname}{} \lstlistoflistings
 \end{document}
