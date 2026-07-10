@@ -103,7 +103,7 @@ git clone https://gitlab.com/gviz/cawaqsviz.git
 cd cawaqsviz
 git submodule update --init external/HydrologicalTwinAlphaSeries
 
-# 2. Build the ZIP from the parent directory, excluding dev-only artefacts
+# 2. Build the ZIP from the parent directory, excluding (optionally) dev-only artefacts 
 cd ..
 zip -r cawaqsviz.zip cawaqsviz \
     -x "cawaqsviz/.git/*" \
@@ -151,8 +151,8 @@ If the install fails, the QGIS Python console prints the exact \script{pip} comm
 
 \alertinfo{To use any new update of the plug-in installed via ZIP, it will be necessary to repeat this entire procedure (\cref{sec-install-user}). With Option 1, updating is done with \script{git pull} instead (\cref{sec-install-pixi-update}).}
 
-\section{Dependency Installation} \label{setup-dependances}
-
+\section{Advanced Installation Settings (DEV)} \label{setup-dependances}
+\subsection{Dependency Installation}
 Dependencies are handled automatically. With Option 1, \script{pixi} pins and installs QGIS, Python, and every dependency inside the project folder (\cref{sec-install-pixi}). With Option 2, the first-launch bootstrap resolves the backend and its Python dependencies (\cref{sec-install-bootstrap}). No manual dependency installation is normally required.
 
 \alertinfo{If the first-launch bootstrap fails, the QGIS Python console prints the exact \script{pip} command to run. As a fallback, dependencies can still be installed manually from the Python interpreter built into QGIS. Installing them from any other interpreter will not allow QGIS to access the required libraries.}
@@ -164,7 +164,7 @@ The core Python dependencies are: \script{pandas}, \script{numpy}, \script{ipyth
 >>> pip.main(['install', 'pandas', 'numpy', 'ipython', 'matplotlib', 'geopandas'])
 \end{lstlisting}
 
-\section{Developer Installation} \label{sec-install-expert}
+\subsection{Developer Installation} \label{sec-install-expert}
 
 For development purposes, and to make it easier to update the plug-in from the QGIS interface, the plug-in can be installed directly in the QGIS \emph{native} extensions directory. The \gitlab~repository for \cwv~can be cloned from a command terminal, remembering to initialise the backend submodule:
 
@@ -184,7 +184,7 @@ C:/Programmes/QGIS3.X.X.X/apps/qgis-ltr/python/plugins/
 \end{lstlisting}
 
 
-The plug-in code structure is described in chapter \ref{chap-description-src}.\\
+The plug-in code structure is described in section \ref{chap-description-src}.\\
 
 \alertinfo{Autocompletion of features related to the qgis library is available provided the Python interpreter used by QGIS is used. A virtual environment can be initialised for this purpose.}
 
