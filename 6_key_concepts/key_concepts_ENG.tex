@@ -1,0 +1,87 @@
+\chapter{Key Concepts for Developers}
+\label{chap-key-concepts}
+
+\renewcommand{\headrulewidth}{0.3pt}
+\fancyhead[LE]{\thepage} \fancyhead[RE]{\nouppercase{\textbf{\leftmark}}}
+\fancyhead[RO]{\thepage} \fancyhead[LO]{\nouppercase{\textbf{\rightmark}}}
+\fancyfoot[L,C,R]{}
+
+\setlength{\parindent}{0.35cm}
+
+\minitoc
+\newpage
+% ================================================================
+
+This chapter gathers a small set of \textbf{behavioural rules} that the code
+follows silently --- decisions that are not obvious from reading a single
+function, but that a new developer must know before touching data flowing
+between \cawaqs~and \cwv. It is the natural home for ``why does the code do
+\emph{that}?'' knowledge; the architectural tour and the concrete editing
+recipes follow in \cref{chap-dev}.
+
+\section{Coupling Observation Points to Mesh Cells}
+\label{sec-obs-coupling}
+
+An observation point (a gauging station, a piezometer, \ldots) must be attached
+to exactly one mesh cell before its simulated values can be read. \cwv~decides
+which cell to use in \textbf{two different ways}, and the choice is made
+\emph{per observation}, not globally:
+
+\begin{itemize}
+    \item \textbf{By identifier (preferred).} If the observation layer carries an
+    explicit cell identifier --- a configured \script{ID\_ABS} column in the
+    observation's attribute table (\script{.dbf}) --- that identifier is used
+    directly. This is the authoritative path: the coupling is exactly what the
+    data declares, independent of geometry.
+
+    \item \textbf{By geometry (fallback).} If no such identifier is provided, the
+    code falls back to a \textbf{nearest-cell} search: it takes the observation's
+    point geometry and finds the closest cell of the relevant mesh layer through
+    a spatial-index nearest-neighbour lookup.
+\end{itemize}
+
+\alertwarning{The two paths are \textbf{not} equivalent. The geometric fallback
+is a convenience for data that lacks explicit identifiers; it can attach a point
+to the wrong cell near mesh boundaries or where cells are small. Whenever
+authoritative results matter, provide \script{ID\_ABS} on the observations and
+rely on the identifier path --- the nearest-cell search should be treated as a
+last resort, not the default.}
+
+\section{The HYD Compartment: \texorpdfstring{\script{ID\_ABS}}{ID\_ABS} vs.\
+\texorpdfstring{\script{ID\_GIS}}{ID\_GIS}}
+\label{sec-hyd-id-translation}
+
+For every compartment \emph{except one}, a cell keeps the \textbf{same
+identifier} on both sides of the tool: the ID used inside \cawaqs~is the ID used
+inside \cwv. This lets most of the code move IDs across the \cawaqs~/~\cwv~seam
+without any conversion.
+
+The \textbf{HYD (hydrological/river) compartment is the sole exception.} Its
+cells are identified differently on each side:
+
+\begin{itemize}
+    \item inside \cawaqs, a HYD cell is identified by its \textbf{\script{ID\_ABS}}
+    (the absolute/internal \cawaqs~index);
+    \item inside \cwv~(the GIS world), the same cell is identified by its
+    \textbf{\script{ID\_GIS}}.
+\end{itemize}
+
+The two are bridged by a \textbf{HYD correspondence table} produced with the
+simulation outputs, which pairs each \script{ID\_GIS} with its \script{ID\_ABS}.
+The translation is applied \textbf{in both directions}, at the two ends of the
+data path:
+
+\begin{itemize}
+    \item \textbf{On input} (reading a HYD observation / feeding \cwv): the
+    incoming \cwv-side \script{ID\_GIS} is looked up in the correspondence table
+    and \textbf{translated to \script{ID\_ABS}} so that \cawaqs~results can be
+    addressed.
+    \item \textbf{On output} (reporting HYD results back to the GIS): the reverse
+    translation is applied, mapping \script{ID\_ABS} back to \script{ID\_GIS}.
+\end{itemize}
+
+\alertinfo{Practical consequence: if you are debugging a HYD result and the IDs
+``don't line up'', check whether you are comparing an \script{ID\_ABS}
+(\cawaqs~side) against an \script{ID\_GIS} (\cwv~side). For every other
+compartment the identifiers coincide and no such lookup happens; only HYD carries
+--- and requires --- this correspondence table.}

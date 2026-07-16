@@ -1,4 +1,4 @@
-\chapter{Fonctionnalités et configuration de l'extension CaWaQS-Viz}
+\chapter{Configuration}
 \label{chap-user}
 
 \renewcommand{\headrulewidth}{0.3pt}
@@ -10,35 +10,28 @@
 
 \minitoc
 \newpage
-\
-
-\newpage
-
 % ================================================================
 
 \section{Généralités}
 \label{sec-generalites}
 
-L'extension \cwv~intègre plusieurs fonctionnalités accessibles depuis sa boîte de
-dialogue d'accueil (\cref{fig-cwv_home_page}) :
+L'extension \cwv~intègre plusieurs fonctionnalités accessibles depuis sa boîte de dialogue d'accueil (\cref{fig-cwv_home_page}) :
 \begin{itemize}
     \item une entrée dédiée à la configuration de l'application \cawaqs~(\gui{Settings}
-        - \cref{sec-config} à \ref{sec-json_config_project}) ;
+        - \cref{sec_config} à \ref{sec-json_config_project}) ;
 
-    \item des outils d'aide à la calibration (\gui{Calibration tools} - \cref{sec-calib-tools})
+    \item des outils d'aide au calage (\gui{Calibration tools} - \cref{sec-calib-tools})
         ;
 
-    \item des fonctionnalités de visualisation des chroniques temporelles de débits
-        et de piézométrie simulées et observées (\gui{Compare Sim/Obs} - \cref{sec-com-simobs})
+    \item des fonctionnalités de visualisation des chroniques temporelles de débits et de piézométrie simulées et observées (\gui{Compare Sim/Obs} - \cref{sec-com-simobs})
         ;
 
-    \item des outils de visualisation de la distribution spatiale des composantes
-        hydrologiques (\gui{Spatial Maps} - \cref{sec-spatial-map}) ;
+    \item des outils de visualisation de la distribution spatiale des composantes hydrologiques (\gui{Spatial Maps} - \cref{sec-spatial-map}) ;
 
     \item une fonction de visualisation du bilan hydrologique (\gui{Budget Bar Plot}
         - \cref{sec-bufget-barplot}) ;
 
-    \item un visualiseur des régimes hydrologiques (\gui{Hydrological regime} - \cref{sec-regime-hydro}).
+    \item un visualiseur de régime hydrologique (\gui{Hydrological regime} - \cref{sec-regime-hydro}).
 \end{itemize}
 
 \begin{figure}[H]
@@ -50,488 +43,150 @@ dialogue d'accueil (\cref{fig-cwv_home_page}) :
     \label{fig-cwv_home_page}
 \end{figure}
 
-\section{Configuration du plug-in \cwv}
-\label{sec_config}
-
-L'utilisation de l'extension \cwv~se fonde sur un projet \script{SIG} préexistant
-contenant :
+L'utilisation de l'extension \cwv~repose sur un projet \script{SIG} préexistant contenant :
 \begin{itemize}
-    \item les maillages des différents modules de l'application \cawaqs, aux
-        résolutions des sorties de modélisation ;
+    \item les maillages des différents modules de l'application \cawaqs, aux résolutions de sortie de la modélisation ;
 
-    \item les points d'observation et/ou les points d'extractions, situés dans les limites de l'emprise du modèle.
+    \item des points d'observation et/ou des points d'extraction, situés à l'intérieur des limites de l'emprise du modèle.
 \end{itemize}
 
-Le plug-in doit être configuré pour lire les différents fichiers de sortie de modélisation
-et/ou d'entrée \cawaqs~ainsi que les différents maillages. Cette paramétrisation
-du plug-in peut être effectuée dans la fenêtre \gui{Settings}. Pour ce faire, deux
-procédures sont possibles :
-\begin{itemize}
-    \item importer un fichier de configuration \script{.json} préalablement
-        établi ;
+\subsection{Mode de configuration de \cwv}
+\label{sec_config}
 
-    \item configurer manuellement le projet dans la deuxième partie de la boîte de
-        dialogue de la figure \ref{fig-DialogSettings}.
+Le plug-in doit être configuré pour lire les différents fichiers de sortie de la modélisation et/ou les fichiers d'entrée de \cawaqs~ainsi que les différents maillages. Ce paramétrage du plug-in peut être réalisé dans la fenêtre \gui{Settings}. Pour ce faire, deux procédures sont disponibles \ref{fig-DialogSettings} :
+\begin{itemize}
+     \item PREMIÈRE FOIS : configurer le projet manuellement dans la seconde partie de la boîte de dialogue (section \ref{sec-auto-detection}).
+    \item DÉJÀ CONFIGURÉ : importer un fichier de configuration \script{.json} établi au préalable (section \ref{sec-json_config_project}).
+
 \end{itemize}
 
 \begin{figure}[H]
     \centering
-    % Première figure
-    \begin{subfigure}
-        [b]{0.45\linewidth}
-        \centering
-        \includegraphics[width=\linewidth]{
-            2_application_user_guide/fig/DialogSettings_creat_project.png
-        }
-        \caption{}
-        \label{fig_DialogSettings_creat_projet}
-    \end{subfigure}
-    \hfill
-    % Deuxième figure
-    \begin{subfigure}
-        [b]{0.45\linewidth}
-        \centering
-        \includegraphics[width=\linewidth]{
-            2_application_user_guide/fig/DialogSettings_import_project.png
-        }
-        \caption{}
-        \label{fig_DialogSettings_inport_projet}
-    \end{subfigure}
-    \caption{Boîte de dialogue \gui{Settings} du plug-in. La méthode de
-    configuration de l'application \cwv doit être sélectionnée : \textbf{(a)} création
-    d'un nouveau projet \textbf{(b)} importation d'une configuration de projet. }
+    \includegraphics[width=0.45\linewidth]{
+        2_application_user_guide/fig/DialogSettings.png
+    }
+    \caption{La boîte de dialogue \gui{Settings} du plug-in, avec la création d'un nouveau projet sélectionnée.}
     \label{fig-DialogSettings}
 \end{figure}
 
-Les détails de ces deux procédures de configuration de l'application sont décrits
-respectivement en paragraphes \ref{sec-config-manual} et \ref{sec-json_config_project}.
+Le détail de ces deux procédures de configuration de l'application est décrit respectivement aux paragraphes \ref{sec-auto-detection} et \ref{sec-json_config_project}.
 
-\section{Configuration manuelle du plug-in : première utilisation}
-\label{sec-config-manual}
+% ================================================================
+% Détection automatique des paramètres du projet à partir du système de fichiers.
+% ================================================================
 
-La partie inférieure de la boîte de dialogue \gui{Settings} permet de configurer
-manuellement le plug-in. Les éléments suivants doivent y être définis :
-\begin{enumerate}
-    \item un nom de projet ;
+\section{Détection automatique des paramètres du projet}
+\label{sec-auto-detection}
 
-    \item les compartiments modélisés ;
+Lors de la configuration manuelle d'un projet (plutôt que par import d'un fichier de configuration \script{.json}), \cwv~peut pré-remplir la majeure partie de la boîte de dialogue \gui{Settings} en inspectant le système de fichiers. La seule action requise de l'utilisateur est de parcourir jusqu'au répertoire de sorties \cawaqs~: la détection s'exécute alors automatiquement et renseigne les compartiments, les années de simulation, le régime, le répertoire d'observations et le chemin de configuration des géométries.
 
-    \item une configuration des couches SIG des maillages ;
+La détection est un mécanisme de \emph{meilleur effort}, à visée de commodité. Elle repose entièrement sur les conventions de nommage et d'organisation décrites ci-dessous. Si une convention n'est pas respectée, le champ correspondant est simplement laissé vide et peut être renseigné à la main --- la seule exigence stricte est que le répertoire de sorties contienne au moins un sous-dossier de module reconnaissable (voir \cref{ssec-auto-outcaw}).
 
-    \item les répertoires de sortie de modélisation et d'observation\footnote{les répertoires d'observation des débits et de piézométrie sont supposés être dans le même répertoire parent.} si des points d'observation sont définis dans le projet.
-\end{enumerate}
-
-Le nom du projet sera utilisé pour nommer un sous-dossier créé dans le répertoire
-de post-traitement. Les sorties graphiques de l'application \cwv\ seront placées
-dans ce dossier de post-traitement.\\
-
-La configuration des géométries peut également être importée depuis un fichier de
-configuration \json~(en cliquant sur \gui{Importer une configuration des géométries depuis un \json})
-ou définie manuellement \textit{via} l'option \gui{Sélectionner les résolutions depuis le projet courant}.
-
-\alertinfo{À noter que toute configuration manuelle de projet et de géométrie sera exportée au format \json~dans le répertoire de post-traitement à l'exécution de la boite de dialogue \gui{Settings}.}
-
-\subsection{Contenu du projet QGIS utilisé pour l'exploitation des résultats de
-simulations \cawaqs}
-\label{sec-res-cawaqs}
-
-\textbf{{Les \script{shapefiles} des maillages du modèle \cawaqs}}\\
-Le projet QGIS utilisé pour le traitement des simulations avec l'utilitaire \cwv
-nécessite de contenir :
+La détection s'appuie sur deux sondes indépendantes, ancrées sur deux racines différentes :
 \begin{itemize}
-    \item les maillages (résolutions) des compartiments au format \gui{shapefile}
-        du modèle (se référer à la notice \cawaqs~\footnote{Terminologie de
-        géométrie \cawaqs. Pour plus d'informations sur les différents types de maillages,
-        se référer aux notices du modèle (\ie~notice utilisateur et guide technique),
-        disponibles sur le dépôt GitLab \href{https://gitlab.com/cawaqs/cawaqs}{https://gitlab.com/cawaqs/cawaqs}.}
-        pour identifier les résolutions de sorties du compartiment \gui{WATBAL}).
-        Les types de résolution \cawaqs~à importer dans le projet SIG en vue d'un
-        traitement des sorties de modélisation sont fonction des compartiments
-        effectivement modélisés ;
+    \item le \textbf{répertoire de sorties} \cawaqs~que vous sélectionnez (\cref{ssec-auto-outcaw}) --- pilote les compartiments, les années et le régime ;
 
-    \item les points d'observation des compartiments à définir dans l'extension \cwv.
+    \item le \textbf{fichier de projet QGIS} (\script{.qgz}~/~\script{.qgs}) actuellement ouvert (\cref{ssec-auto-neighbors}) --- pilote la configuration des géométries, le répertoire d'observations et le nom du projet.
 \end{itemize}
 
-\begin{table}[H]
-    \centering
-    \begin{tabular}{>{\raggedleft\arraybackslash}m{3cm}|>{\centering\arraybackslash}m{3.2cm}>{\centering\arraybackslash}m{3.2cm}>{\centering\arraybackslash}m{3.2cm}>{\centering\arraybackslash}m{3.2cm}}
-        \hline
-                                                                & \textbf{Compartiment de surface\newline(WATBAL)}                                                               & \textbf{Compartiment hydraulique \newline(HYD)} & \textbf{Compartiment non saturé \newline(NSAT)} & \textbf{Compartiment aquifère \newline(AQ)} \\
-        \hline
-        \textbf{Résolution \cawaqs}                             & Maille unitaire de surface (\texttt{ele\_bu})\footnotemark~ \newline ou Cellule de production (\texttt{Cprod}) & Élément rivière (\texttt{ele\_musk})            & Grille du milieu non saturé                     & Maillages de toutes les couches aquifères   \\
-        \hline
-        \textbf{Champs obligatoires dans la table attributaire} & Identifiants des cellules                                                                                      & Identifiants GIS des éléments rivières          & Identifiants des mailles                        & Identifiants absolus des mailles            \\
-        \hline
-    \end{tabular}
-    \caption{Résolutions \cawaqs~pouvant être importées comme résolution de
-    compartiment.}
-    \label{tab-resolution_per_compartment}
-\end{table}
+% ----------------------------------------------------------------
+\subsection{Sonde 1 --- depuis le répertoire de sorties \cawaqs}
+\label{ssec-auto-outcaw}
 
-\alertwarning{Les noms des couches SIG du projet correspondant aux aquifères doivent être identiques à ceux définis dans la configuration CaWaQS afin d'assurer le bon fonctionnement de l'application.}
+Cette sonde est ancrée sur le répertoire de sorties sélectionné via le bouton \gui{Browse}. Elle attend, directement dans ce répertoire, un ou plusieurs sous-dossiers de sortie de module, chacun nommé d'après son module \cawaqs~:
 
-\textbf{{Les \script{shapefiles} des points d'extractions}}\\
+\begin{center}
+\begin{tabular}{ll}
+    \textbf{Sous-dossier} & \textbf{Compartiment détecté} \\
+    \hline
+    \script{Output\_AQ}      & \script{AQ} (aquifères)        \\
+    \script{Output\_HYD}     & \script{HYD} (réseau hydraulique) \\
+    \script{Output\_WATBAL}  & \script{WATBAL} (bilan hydrique de surface) \\
+    \script{Output\_NONSAT}  & \script{NSAT} (zone non saturée) \\
+\end{tabular}
+\end{center}
 
-L'extraction des simulations de débit et de charge hydraulique peut être réalisée
-aux droits de point d'extraction. Deux types types de points d'extraction peuvent être
-renseignés :
+Au moins un de ces sous-dossiers doit être présent ; sinon la détection échoue et la boîte de dialogue doit être renseignée manuellement.
+
+À l'intérieur de chaque sous-dossier de module, les \textbf{noms des fichiers de résultats binaires} déterminent les années de simulation et le régime. Deux motifs de nommage sont reconnus :
+
 \begin{itemize}
-    \item des points d'extraction simple, qui n'intègrent pas de chronique de
-        mesure ;
+    \item \script{<MODULE>\_<VAR>.YYYYYYYY.bin} --- un pas de temps annuel \textbf{transitoire}. Les huit chiffres encodent deux années consécutives, l'année de début \script{YYYY} suivie de l'année de fin \script{YYYY}, la fin valant le début $+\,1$ (par ex. \script{20102011}). Chaque fichier de ce type contribue par son année de début ; le début le plus ancien et la fin la plus récente définissent la plage de simulation.
 
-    \item des points d'observation, qui sont des points d'extraction avec des
-        données de mesure.
+    \item \script{<MODULE>\_<VAR>.00.bin} --- un résultat en régime \textbf{permanent}. La présence de ce motif signale une simulation permanente.
 \end{itemize}
 
-Les points d'extraction et d'observation sont contenus dans deux fichiers
-\script{shapefile} distinct dont les tables attributaires contiennent les champs
-recensé dans la table \ref{tab_obs_extract}.
+Le régime est résolu comme suit : \script{Steady} si seuls des noms de fichiers permanents sont trouvés et aucun transitoire ; sinon \script{Transient}. Si les deux motifs coexistent, la simulation est classée \script{Transient} et un avertissement est émis. Si aucune année n'a pu être lue dans un nom de fichier, la plage vaut par défaut \script{1970}--\script{2022}.
 
-\vspace{8pt}
+L'organisation attendue ressemble donc à ceci :
 
-\renewcommand{\arraystretch}{1.5} % pour aérer les lignes
-\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}} \newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
-
-\begin{table}[H]
-    \begin{tabular}{|C{0.2\textwidth}|C{0.35\textwidth}|C{0.35\textwidth}|}
-        \hline
-        \textbf{TYPE DE POINT}& \textbf{CONTENUS DE LA TABLE ATTRIBUTAIRE} & \textbf{RENDUS} \tabularnewline                    \hline
-        \textbf{Point d’extraction}  & 
-        \begin{itemize}[leftmargin=*, itemsep=0.5ex]
-            \item Nom du point
-            \item Identifiant de la maille de rattachement\footnote{\gui{ID GIS} si extraction dans le compartiment HYD, \gui{ID ABS} si extraction en aquifère, champ optionnel}, identifiant de la couche aquifère (si extraction en aquifère)\end{itemize} & \begin{itemize}[leftmargin=*, itemsep=0.5ex]\item Hydrogrammes et courbes piézométriques simulés au droit du point d’extraction\end{itemize} \tabularnewline                     \hline
-        \textbf{Point d’observation} & 
-        \begin{itemize}[leftmargin=*, itemsep=0.5ex]
-            \item Nom du point
-            \item Identifiant de la maille de rattachement \footnotemark[\value{footnote}]
-        \end{itemize} & 
-        \begin{itemize}[leftmargin=*, itemsep=0.5ex]
-            \item Hydrogrammes et courbes piézométriques simulés et observés
-            \item Critères objectifs de comparaison entre les observations et les simulations
-        \end{itemize} \tabularnewline \hline
-    \end{tabular}
-    \label{tab_obs_extract}
-    \caption{Structure des couches SIG relatives aux points d’extraction et rendus graphiques associés}
-\end{table}
-
-\vspace{8pt}
-
-\alertwarning{Les \script{shapefile} d'observation doivent être importée dans le projet et renseignée dans la configuration de \cwv~si les compartiements HYD et/ou AQ sont traités. Sans observations l'extention ne sera pas fonctionnelle}
-
-\subsection{Configuration de la géométrie du projet depuis un projet QGIS
-existant}
-\label{sec_config_manuelle}
-
-La configuration géométrique de l'application \cwv peut être définie depuis un projet
-QGIS existant via la boite de dialogue \gui{Application configuration from an existing projet}
-de la boite de dialogue de paramétrage de l'application.
-
-La fenêtre est organisée selon deux sections :
-\begin{itemize}
-    \item sur la gauche, sont listés les compartiments \cawaqs (WATBAL, HYD, AQ,
-        NSAT),
-
-    \item sur la droit, sont listé les paramètres à définir pour produire les
-        rendus graphique (débit et piézométrie) aux droits de points d'observation
-        (point d'extraction avec observation) ou de points d'exctration (sans observation).
-\end{itemize}
-
-Si les champs de paramétrage de l'application sont laissé vide, le compartiment
-concerné n'est pas intégrer dans la configuration géométrique. \\
-
-Les champs des compartiments sont configurés suivant :\\
-
-\noindent
-\textbf{Le compartiment de surface (\gui{"WATBAL COMPARTMENT"}) :}
-
-\vspace{0.5em}
-
-\begin{minipage}[t]{0.45\textwidth}
-    \begin{itemize}
-        \item \gui{Surface resolution} : résolution de sortie du bilan hydrique de surface (CPROD ou elebu) ;
-        \item \gui{cell id} : le numéro de la colonne dans la table attributaire qui correspond à l'identifiant des mailles ;
-        \item \gui{cell area} : le numéro de la colonne dans la table attributaire qui correspond à la surface des mailles (paramètre optionnel).
-    \end{itemize}
-\end{minipage}%
-\hfill
-\begin{minipage}[t]{0.45\textwidth}
-    \centering
-    \raisebox{\dimexpr-\height+\ht\strutbox}{\includegraphics[
-        width=0.8\linewidth
-    ]{
-        2_application_user_guide/fig/DialogSelectLayer_watbal.png
-    }} \captionof{figure}{Champ de paramétrage du compartiment WATBAL}
-\end{minipage}
-
-\vspace{1em}
-\textbf{Le compartiment hydrologique (\gui{HYD COMPARTMENT})}
-
-\begin{minipage}[t]{0.45\textwidth}
-    \begin{itemize}
-        \item \gui{Hyd resolution} : nom de la résolution de sortie du compartiment \gui{HYD} (éléments rivières) ;
-        \item \gui{GIS Id} : le numéro de la colonne dans la table attributaire qui correspond à l'identifiant GIS des mailles 
-    \end{itemize}
-\end{minipage}%
-\hfill
-\begin{minipage}[t]{0.45\textwidth}
-    \centering
-    \raisebox{\dimexpr-\height+\ht\strutbox}{\includegraphics[
-        width=0.8\linewidth
-    ]{
-    2_application_user_guide/fig/DialogSelectLayer_hyd.png
-    }} 
-    \captionof{figure}{Champ de paramétrage du compartiment HYD}
-\end{minipage}
-
-\vspace{1em}
-\textbf{Le compartiment non saturé (\gui{NSAT COMPARTMENT}):}
-
-\begin{minipage}[t]{0.45\textwidth}
-    \begin{itemize}
-        \item \gui{Unsatured zone resolution} : nom de la résolution de sortie du compartiment \gui{NSAT} ;
-        \item \gui{cell id} : le numéro de la colonne dans la table attributaire qui correspond à l'identifiant des mailles. 
-    \end{itemize}
-\end{minipage}%
-\hfill
-\begin{minipage}[t]{0.45\textwidth}
-    \centering
-    \raisebox{\dimexpr-\height+\ht\strutbox}{\includegraphics[
-        width=0.8\linewidth
-    ]{
-    2_application_user_guide/fig/DialogSelectLayer_nsat.png
-    }} 
-    \captionof{figure}{Champ de paramétrage du compartiment HYD}
-\end{minipage}
-
-\vspace{1em}
-\textbf{Le compartiment saturé (\gui{AQ COMPARTMENT})}
-
-\begin{minipage}[t]{0.45\textwidth}
-     \begin{itemize}
-            \item \gui{Aquiferes resolutions} : les couches SIG constituant le
-                maillage souterrain. La couche sélectionnée est ajoutée en cliquant
-                sur \gui{Add}. Les couches doivent être ordonnées de la couche supérieure
-                à la couche inférieure à l'aide des boutons \gui{up} et \gui{down}.
-                Enfin, une couche peut être supprimée de la liste en cliquant sur
-                \gui{remove} ;
-            \item \gui{cell id abs} : identifiant de la colonne de la table
-                attributaire contenant l'identifiant absolu des mailles. Cet identifiant
-                peut être homogène entre les couches SIG : dans ce cas, \gui{homogeneous ID ABS}
-                doit être sélectionné. Sinon, cliquer sur \gui{heterogeneous ID ABS}
-                pour ouvrir des boîtes de dialogue permettant de renseigner, pour
-                chaque couche, la colonne contenant l'ID ABS des mailles (cf. Fig \ref{fig_id_abs_hetero}).
-        \end{itemize}
-\end{minipage}%
-\hfill
-\begin{minipage}[t]{0.45\textwidth}
-    \centering
-    \raisebox{\dimexpr-\height+\ht\strutbox}{\includegraphics[
-        width=0.8\linewidth
-    ]{
-    2_application_user_guide/fig/DialogSelectLayer_aq.png
-    }} 
-    \captionof{figure}{Champ de paramétrage du compartiment HYD}
-    \raisebox{\dimexpr-\height+\ht\strutbox}{\includegraphics[
-        width=0.5\linewidth
-    ]{
-2_application_user_guide/fig/DialogSelect_Layer_hetero_ID_ABS
-    }} 
-    \label{fig_id_abs_hetero}
-    \captionof{figure}{Fenêtre de sélection de l'identifiant du champ contenant l'\gui{ID ABS} dans la table attributaire dans le cas d'identifiant de champ hétérogène entre les couches}
-\end{minipage}
-
-
-
-\alertwarning{Quelques point de vigilance :
-\begin{itemize}
-    \item \textbf{L'identifiant de la première colonne d'une table attributaire commence à 0}. L'icône \includegraphics[height=0.45cm]{2_application_user_guide/fig/table.png} permet de visualiser les identifiants des champs renseignés dans la table attributaire de la résolution sélectionnée dans la liste déroulante ;
-    \item le code (ex : code BSS) d'un point d'observation doit être \textbf{unique} entre tous les points d'observation ;
-    \item La configuration géométrique des compartiments cochés dans la boite de dialogue de paramétrisation du projet, doit être définie dans la boite de dialogue de configuration des géométries.
-\end{itemize}}
-
-\vspace{8pt}
-
-\textbf{Les points d'extraction - \gui{Hydrological and Hydrological plots}} \\
-Les points d'extraction peuvent être de deux types :
-\begin{itemize}
-    \item[$\bullet$] des points d'extractions simples, qui permettent de
-    visualiser des variables simulées au droit d'un point de ces derniers ;
-    \item[$\bullet$] des points d'observation, qui permettent de comparer les variables simulées à des données d'observation aux droits de ces derniers.
-\end{itemize}
-
-
-
-La configuration des points d'extraction nécessite de renseigner dans les champs \gui{GIS Layer}, la nom de la couche dans le projet QGIS contenant les points d'observations et les points d'extraction selon le compartiment \cws~ concerné. Les identifiants des champs à renseigner sont les suivants : 
-\vspace{8pt}
-
-\begin{minipage}[t]{0.45\textwidth}
-    \textbf{Les points d'extraction du compartiment \gui{HYD}} 
-    \vspace{4pt}
-
-     \underline{Les points d'extraction}
-
-    \begin{itemize}
-        \item \gui{name} : nom du point d'observation ;
-        \item \gui{ID GIS} : identifiant GIS du point d'observation auquel le point d'observation doit être attaché (champ optionnel)
-    \end{itemize}
-
-    \vspace{2pt}
-    \underline{Les points d'observation} 
-    \begin{itemize}
-        \item \gui{code} : code d’identification du points d'observation, doit être un code unique pour chaque point. Le fichier d'observation du point doit porte le même nom sous l’extension \script{.dat} ;
-        \item les champ \gui{name} et \gui{ID GIS} sont également préciser pour la configuration des points d'observation 
-    \end{itemize}
-    \vspace{8pt}
-    \textbf{Les points d'extraction du compartiment \gui{AQ}} 
-    \vspace{4pt}
-
-     \underline{Les points d'extraction}
-
-    \begin{itemize}
-        \item \gui{name} : nom du point d'observation ;
-        \item \gui{ID LAYER} : identifiant de la couche aquifère
-        \item \gui{ID GIS} : identifiant GIS du point d'observation auquel le point d'observation doit être attaché (champ optionnel)
-    \end{itemize}
-
-    \vspace{2pt}
-    \underline{Les points d'observation} 
-    \begin{itemize}
-        \item \gui{code} : code d’identification du points d'observation, doit être un code unique pour chaque point. Le fichier d'observation du point doit porté le même nom sous l’extension \script{.dat} ;
-        \item les champ \gui{name} et \gui{ID GIS} sont également préciser pour la configuration des points d'observation 
-    \end{itemize}
-
-    
-\end{minipage}%
-\hfill
-\begin{minipage}[t]{0.45\textwidth}
-    \centering
-    \raisebox{\dimexpr-\height+\ht\strutbox}{\includegraphics[
-        width=0.9\linewidth
-    ]{
-    2_application_user_guide/fig/DialogSelectLayer_hyd_extraction.png
-    }} 
-    \captionof{figure}{Champs de configuration des points d'extraction du compartiment \gui{HYD}}
-    \vspace{4pt}
-    \raisebox{\dimexpr-\height+\ht\strutbox}{\includegraphics[
-        width=0.9\linewidth
-    ]{
-    2_application_user_guide/fig/DialogSelectLayer_aq_extraction
-    }} 
-    \label{fig_id_abs_hetero}
-    \captionof{figure}{Champs de configuration des points d'extraction du compartiment \gui{AQ}}
-\end{minipage}
-
-\alertwarning{
-Le points d'extraction doivent être contenus dans un fichier \script{.shp} différent des points d'observtion. Les points ne peuvent pas être contenu dans le même fichier s'il s'agit d'extraction dans deux compartiment différent.
-}
-
-
-\alertinfo{
-Une sauvegarde préliminaire du fichier de configuration géométrique peut être sauvegardé en renseignant un chemin de fichier dans le champ situé en bas à gauche de la boite de dialogue. Ce fichier (\cfcod \ref{code_config_geom})  sera enregistré à l'exucution de la boite de dialogue \gui{Settings} si le  si le projet configuré n'existe pas encore dans le répertoire
-de post-traitement renseigné. 
-Plusieurs configurations de projet peuvent être sauvegardées dans un même répertoire de post-Processing, sous réserve qu'elles n'aient
-pas le même nom de projet. }
-
-
-
-\subsection{Configuration des résolutions depuis un fichier de configuration
-\json}
-
-La configuration géométrique des résolutions peut être renseignée par un fichier
-\json\ selon la structure suivante :
-
-\begin{lstlisting}[language=json, caption={Contenu d'un fichier de configuration géométrique}, label={code_config_geom}]
-{   // liste des compartiments CaWaQS a analyser (1 = AQ, 2 = HYD, 3 = WATBAL) 
-    "ids_compartment": [], 
-                           
-    "resolutionNames": 
-    {
-        "1": 
-            [[""]], // liste des noms des maillages aquiferes dans le projet QGIS 
-        "2" : 
-            [[""]], // liste du nom du maillages riviere dans le projet QGIS 
-        "3" : 
-            [[""]] // liste du nom du maillage de surface dans le projet QGIS 
-        "4" : 
-            [[""]] // liste du nom du maillage du non-sature dans le projet QGIS 
-        }, 
-    "ids_col_cell": { // "id compartiment" : "no de la colonne de l'id des mailles"
-        "1" : "",  // "id AQ" : "no de la colonne de l'id absolue"
-        "2" : "",  //"id HYD" : "no de la colonne de l'id GIS"
-        "3" : ""   // "id WATBAL" : "no de la colonne de l'id de la maille"
-        }, 
-    "obsNames": { 
-    // "id compartiment" : "nom du shp des obs associes dans le projet QGIS"
-        "1": "", 
-        "2" : ""
-        }, 
-    "obsIdsColCells": {
-    // "id compartiment" : "no du champ du code du point de mesure"
-        "1": "", 
-        "2": ""
-        }, 
-    "obsIdsColNames": { 
-    // "id compartiment" : "no du champ du nom du point de mesure"
-        "1": "", 
-        "2" : ""
-        }, 
-    "obsIdsColLayers": { 
-    // "id compartiment" : "no du champ de l'identifiant de la couche aquifere"
-        "1": "", 
-        "2" : null
-        }, 
-    "obsIdsCell": { 
-    // "id comp." : "no du champ de l'id absolu ou gis de maille ratachee a l'obs
-        "1" : "", 
-        "2" : null
-    }, 
-     "extNames": {
-    // "id compartiment" : " nom du shp d'extraction associes dans le projet QGIS "
-        "2": "",
-        "1": ""
-    },
-    "extIdsColNames": {
-    // "id compartiment" : "no du champ contenant le nom du point d'extraction"
-        "2": "",
-        "1": ""
-    },
-    "extIdsColLayers": {
-    // "id compartiment" : "no du champ contenant l'identifiant de la couche aquifere"
-        "2": null,
-        "1": ""
-    },
-    "extIdsColCells": {
-    // "id compartiment" : "no du champ contenant l'identifiant de la maille"
-        "1": "",
-        "2": "",
-    }
-}
-}
+\begin{lstlisting}[caption={Organisation attendue du répertoire de sorties \cawaqs.},captionpos=b,frame=lines,basicstyle=\ttfamily\footnotesize]
+<OUT_CAW>/
+|-- Output_AQ/
+|     |-- AQ_HEAD.20102011.bin      <-- transitoire (2010->2011)
+|     |-- AQ_HEAD.20112012.bin      <-- transitoire (2011->2012)
+|     +-- ...
+|-- Output_HYD/
+|     +-- HYD_Q.20102011.bin
+|-- Output_WATBAL/
+|     +-- WATBAL_...00.bin          <-- marqueur de regime permanent
++-- Output_NONSAT/
+      +-- ...
 \end{lstlisting}
 
-\subsection{Contenu du répertoire de post-traitement}
+\alertinfo{Le régime, la liste des compartiments et les années de simulation sont lus \emph{uniquement} par cette sonde. Parcourir jusqu'au répertoire de sorties est donc l'unique étape obligatoire pour la détection automatique.}
 
-À l'exécution de la boîte de dialogue de paramétrage de l'application \cwv, le
-sous-répertoire du projet est créé dans le répertoire de post-traitement indiqué.
-Si le projet n'existe pas encore dans ce répertoire, un sous-répertoire au nom
-du projet sera créé, contenant les fichiers de configuration du projet et des résolutions,
-écrits au format \gui{json}.
+% ----------------------------------------------------------------
+\subsection{Sonde 2 --- depuis les voisins du projet QGIS}
+\label{ssec-auto-neighbors}
 
-\section{Configuration du projet depuis un fichier de configuration projet \json}
+Cette sonde est ancrée sur le fichier de projet QGIS actuellement ouvert (\script{.qgz}~/~\script{.qgs}). Elle relève purement du meilleur effort : chacun des trois éléments ci-dessous est recherché indépendamment, et n'importe lequel peut rester vide sans empêcher la détection.
+
+\begin{itemize}
+    \item \textbf{Configuration des géométries} --- la sonde recherche les fichiers correspondant à \script{config\_geometries\_*.json} dans le \emph{même dossier} que le fichier de projet. Si plusieurs correspondent, le plus récemment modifié est retenu.
+
+    \item \textbf{Répertoire d'observations} --- la sonde cherche un dossier nommé \script{DATA\_OBS} au niveau du fichier de projet, puis un niveau au-dessus, puis deux niveaux au-dessus, et s'arrête à la première correspondance.
+
+    \item \textbf{Nom du projet} --- déduit du dossier qui \emph{contient} \script{DATA\_OBS} lorsqu'il est trouvé ; sinon du nom du dossier parent (ou grand-parent) du fichier de projet.
+\end{itemize}
+
+Le voisinage attendu du fichier de projet est le suivant :
+
+\begin{lstlisting}[caption={Organisation attendue autour du fichier de projet QGIS.},captionpos=b,frame=lines,basicstyle=\ttfamily\footnotesize]
+<project_root>/                     <-- nom utilise comme nom de projet
+|-- DATA_OBS/                       <-- repertoire d'observations
++-- <qgis_folder>/
+      |-- my_project.qgz            <-- projet QGIS ouvert
+      +-- config_geometries_*.json  <-- config des geometries (le plus recent l'emporte)
+\end{lstlisting}
+
+\alertwarning{Comme la configuration des géométries n'est recherchée qu'à côté du fichier \script{.qgz}~/~\script{.qgs}, et \script{DATA\_OBS} seulement jusqu'à deux niveaux au-dessus, un projet enregistré en dehors de sa structure de dossiers habituelle laissera ces champs vides. C'est le comportement attendu --- renseignez-les manuellement via le bouton \gui{Configure Geometry} et le champ de parcours des observations.}
+
+% ----------------------------------------------------------------
+
+
+
+\section{Configuration du projet à partir d'un fichier \json}
 \label{sec-json_config_project}
 
-L'import d'un fichier externe \json~peut également être utilisé pour configurer
-du projet. Ce fichier est construit de la manière suivante
+Une fois un projet configuré (que ce soit par détection automatique ou à la main), sa configuration est écrite sous forme de fichiers \script{.json} dans \script{<OUT\_CAW>/PostProcessing/CONFIG/}, à savoir \script{config\_project\_<name>.json} et \script{config\_geometries\_<name>.json}. Ces fichiers peuvent ensuite être ré-importés directement via la première procédure de configuration, contournant entièrement la détection.
+
+L'import d'un fichier \json~externe peut aussi servir à configurer le projet. Ce fichier est automatiquement enregistré dans le répertoire de post-traitement d'un projet après sa première configuration.
+
+À l'exécution de la boîte de dialogue de paramétrage de l'application \cwv, le sous-répertoire du projet est créé dans le répertoire de post-traitement spécifié. Si le projet n'existe pas encore dans ce répertoire, un sous-répertoire portant le nom du projet est créé, contenant les fichiers de configuration du projet et des résolutions écrits au format \gui{json}.
+
+
+Ce fichier \json~de configuration de projet est structuré comme suit :
 
 \begin{lstlisting}[language=json]
 {
     "json_path_geometries": str,
-    "projectName": str, 
+    "projectName": str,
     "cawOutDirectory": str,
     "startSim": int,
     "endSim": int,
     "obsDirectory": str,
-    "ppDirectory": str, 
+    "ppDirectory": str,
     "regime": str
 }
 \end{lstlisting}
@@ -539,23 +194,17 @@ du projet. Ce fichier est construit de la manière suivante
 \vspace{-0.6cm}
 Le contenu de chaque objet de ce fichier \json~est le suivant :
 \begin{itemize}
-    \item \gui{json\_path\_geometries} : chemin absolu du fichier de
-        configuration des résolutions ;
+    \item \gui{json\_path\_geometries} : chemin absolu du fichier de configuration des résolutions ;
 
     \item \gui{projectName} : nom du projet ;
 
-    \item \gui{cawOutDirectory} : chemin absolu du répertoire contenant les
-        sorties de modélisation \cawaqs~;
+    \item \gui{cawOutDirectory} : chemin absolu du répertoire contenant les sorties de modélisation \cawaqs~;
 
-    \item \gui{startSim} et \gui{endSim} : années de départ et de fin de la simulation
-        au format \script{integer} ;
+    \item \gui{startSim} et \gui{endSim} : années de début et de fin de simulation au format \script{integer} ;
 
-    \item \gui{obsDirectory} : chemin absolu du répertoire parent contenant les
-        chroniques observées ;
+    \item \gui{obsDirectory} : chemin absolu du répertoire parent contenant les chroniques observées ;
 
-    \item \gui{ppDirectory} : chemin absolu du répertoire de post-traitement. Il
-        est à noter que le chemin doit être pré-existant. Le cas échéant, il ne sera
-        pas créé par l'application.
+    \item \gui{ppDirectory} : chemin absolu du répertoire de post-traitement. Notez que ce chemin doit déjà exister. Dans le cas contraire, il ne sera pas créé par l'application.
 
-    \item \gui{regime} : régime de modélisation ("Transient" ou "Steady")
+    \item \gui{regime} : régime de modélisation (« Transient » ou « Steady »).
 \end{itemize}

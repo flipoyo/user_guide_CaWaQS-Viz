@@ -1,9 +1,10 @@
-\documentclass[11pt, french]{book}
+\documentclass[11pt, french, openany]{book}
 \usepackage{natbib}
 \usepackage[french]{babel}
 \selectlanguage{french}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
+\usepackage{lmodern}
 \usepackage{geometry}
 \usepackage{array}
 \usepackage{mathpazo}
@@ -49,7 +50,6 @@
 
 \providecommand{\tabularnewline}{\\}
 \usepackage{tabularx}
-\usepackage{babel}
 \usepackage{fancyhdr}
 \usepackage{color}
 \usepackage[usenames, dvipsnames, svgnames, table]{xcolor}
@@ -112,21 +112,21 @@ stringstyle=
 ]{!}}
 
 \lstdefinelanguage{json}{
-    basicstyle=\footnotesize\ttfamily,   % Police de base
-    commentstyle=\color{olive},          % Style des commentaires
-    keywordstyle=\color{blue},           % Style des mots-clés
-    numberstyle=\tiny\color{gray},       % Style des numéros de ligne
-    numbers=left,                        % Numérotation à gauche
-    stringstyle=\color{purple},          % Style des chaînes de caractères
-    breaklines=true,                     % Coupure automatique des lignes
-    showstringspaces=false,              % Pas d'espaces visibles dans les chaînes
-    tabsize=2,                           % Taille des tabulations
-    frame=lines,                         % Encadrement du code
-    captionpos=b,                        % Position de la légende en bas
-    aboveskip=15pt,                      % Espace avant le listing
-    belowskip=15pt,                      % Espace après le listing
-    comment=[l]{//},                     % Commentaires ligne avec //
-    morecomment=[s]{/*}{*/}              % Commentaires multi-lignes /* */
+    basicstyle=\footnotesize\ttfamily,
+    commentstyle=\color{olive},
+    keywordstyle=\color{blue},
+    numberstyle=\tiny\color{gray},
+    numbers=left,
+    stringstyle=\color{purple},
+    breaklines=true,
+    showstringspaces=false,
+    tabsize=2,
+    frame=lines,
+    captionpos=b,
+    aboveskip=15pt,
+    belowskip=15pt,
+    comment=[l]{//},
+    morecomment=[s]{/*}{*/}
 }
 
 % Pour les notes de rédaction dans le document
@@ -188,7 +188,6 @@ stringstyle=
 \newcommand{\cwuserguide}{\footnote{Notice CaWaQS : \href{https://gitlab.com/cawaqs/cawaqs/-/raw/main/docs/CaWaQS_350_Documentation.pdf?ref_type=heads}{https://gitlab.com/cawaqs/cawaqs/-/raw/main/docs/CaWaQS_350_Documentation.pdf?ref_type=heads}}}
 \makeatother
 
-\usepackage{babel}
 \makeatletter
 \addto\extrasfrench{%
 \providecommand{\og}{\leavevmode\flqq~}%
@@ -214,24 +213,30 @@ Début du bloc avec numérotation romaine
 \end{comment}
 
     \include{couverture/couverture_FR}
-
+    \tableofcontents
     \include{0_introduction/introduction_FR}
     \include{Nouveautés_FR}
 
-    \tableofcontents
-    {}
-
-    \listoffigures \listoftables \lstlistoflistings
-
-    
-
     \mainmatter%
-    
+
+    \part{Guide utilisateur}
     \include{1_installation_requirements/Chap1_FR}
     \include{2_application_user_guide/Chap2_FR}
     \include{3_features/Chap3_FR}
-    \include{4_application_scripts/Chap4_FR}
-    \include{5_develloppeur/5_dev_FR}
+    \include{4_use_from_notebook/Chap4_FR}
+    \include{5_manual_configuration/manual_configuration_FR}
+
+    \part{Guide du développeur}
+    \include{6_key_concepts/key_concepts_FR}
+    \include{7_architecture/architecture_FR}
+    \include{8_development_workflow/development_workflow_FR}
+    \include{9_developer_tooling/developer_tooling_FR}
 
     \include{bibliographie_FR}
+
+    \fancyhead[RE,LO]{\nouppercase{\textbf{\leftmark}}}
+
+    \cleardoublepage \markboth{\listfigurename}{}    \listoffigures
+    \cleardoublepage \markboth{\listtablename}{}     \listoftables
+    \cleardoublepage \markboth{\lstlistlistingname}{} \lstlistoflistings
 \end{document}

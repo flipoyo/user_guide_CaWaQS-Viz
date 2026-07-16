@@ -1,0 +1,50 @@
+\chapter{Concepts clés pour les développeurs}
+\label{chap-key-concepts}
+
+\renewcommand{\headrulewidth}{0.3pt}
+\fancyhead[LE]{\thepage} \fancyhead[RE]{\nouppercase{\textbf{\leftmark}}}
+\fancyhead[RO]{\thepage} \fancyhead[LO]{\nouppercase{\textbf{\rightmark}}}
+\fancyfoot[L,C,R]{}
+
+\setlength{\parindent}{0.35cm}
+
+\minitoc
+\newpage
+% ================================================================
+
+Ce chapitre rassemble un petit ensemble de \textbf{règles comportementales} que le code suit silencieusement --- des décisions qui ne sont pas évidentes à la lecture d'une seule fonction, mais qu'un nouveau développeur doit connaître avant de toucher aux données circulant entre \cawaqs~et \cwv. C'est le lieu naturel du savoir « pourquoi le code fait-il \emph{cela} ? » ; la visite guidée de l'architecture et les recettes concrètes d'édition suivent au \cref{chap-dev}.
+
+\section{Rattacher les points d'observation aux mailles}
+\label{sec-obs-coupling}
+
+Un point d'observation (une station de jaugeage, un piézomètre, \ldots) doit être rattaché à exactement une maille avant que ses valeurs simulées puissent être lues. \cwv~décide quelle maille utiliser de \textbf{deux façons différentes}, et le choix se fait \emph{par observation}, pas globalement :
+
+\begin{itemize}
+    \item \textbf{Par identifiant (préféré).} Si la couche d'observation porte un identifiant de maille explicite --- une colonne \script{ID\_ABS} configurée dans la table attributaire de l'observation (\script{.dbf}) --- cet identifiant est utilisé directement. C'est la voie faisant autorité : le rattachement est exactement ce que déclarent les données, indépendamment de la géométrie.
+
+    \item \textbf{Par géométrie (repli).} Si aucun identifiant de ce type n'est fourni, le code se rabat sur une recherche de la \textbf{maille la plus proche} : il prend la géométrie ponctuelle de l'observation et trouve la maille la plus proche de la couche de maillage concernée via une recherche du plus proche voisin par index spatial.
+\end{itemize}
+
+\alertwarning{Les deux voies ne sont \textbf{pas} équivalentes. Le repli géométrique est une commodité pour des données dépourvues d'identifiants explicites ; il peut rattacher un point à la mauvaise maille près des frontières du maillage ou là où les mailles sont petites. Chaque fois que des résultats faisant autorité importent, fournissez \script{ID\_ABS} sur les observations et appuyez-vous sur la voie par identifiant --- la recherche de la maille la plus proche doit être considérée comme un dernier recours, et non comme le comportement par défaut.}
+
+\section{Le compartiment HYD : \texorpdfstring{\script{ID\_ABS}}{ID\_ABS} contre
+\texorpdfstring{\script{ID\_GIS}}{ID\_GIS}}
+\label{sec-hyd-id-translation}
+
+Pour chaque compartiment \emph{sauf un}, une maille conserve le \textbf{même identifiant} des deux côtés de l'outil : l'ID utilisé à l'intérieur de \cawaqs~est l'ID utilisé à l'intérieur de \cwv. Cela permet à la majeure partie du code de faire circuler les ID à travers la couture \cawaqs~/~\cwv~sans aucune conversion.
+
+Le \textbf{compartiment HYD (hydrologique/rivière) est la seule exception.} Ses mailles sont identifiées différemment de chaque côté :
+
+\begin{itemize}
+    \item à l'intérieur de \cawaqs, une maille HYD est identifiée par son \textbf{\script{ID\_ABS}} (l'index absolu/interne \cawaqs) ;
+    \item à l'intérieur de \cwv~(le monde SIG), la même maille est identifiée par son \textbf{\script{ID\_GIS}}.
+\end{itemize}
+
+Les deux sont reliés par une \textbf{table de correspondance HYD} produite avec les sorties de simulation, qui apparie chaque \script{ID\_GIS} avec son \script{ID\_ABS}. La traduction est appliquée \textbf{dans les deux sens}, aux deux extrémités du chemin de données :
+
+\begin{itemize}
+    \item \textbf{En entrée} (lecture d'une observation HYD / alimentation de \cwv) : l'\script{ID\_GIS} entrant côté \cwv~est recherché dans la table de correspondance et \textbf{traduit en \script{ID\_ABS}} afin que les résultats \cawaqs~puissent être adressés.
+    \item \textbf{En sortie} (report des résultats HYD vers le SIG) : la traduction inverse est appliquée, faisant correspondre \script{ID\_ABS} à \script{ID\_GIS}.
+\end{itemize}
+
+\alertinfo{Conséquence pratique : si vous déboguez un résultat HYD et que les ID « ne collent pas », vérifiez si vous comparez un \script{ID\_ABS} (côté \cawaqs) avec un \script{ID\_GIS} (côté \cwv). Pour tout autre compartiment, les identifiants coïncident et aucune recherche de ce type n'a lieu ; seul HYD porte --- et requiert --- cette table de correspondance.}

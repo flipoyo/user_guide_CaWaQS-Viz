@@ -12,6 +12,16 @@
 
 % ====================================================
 
-The visualization tool \cwv~was developed with the aim of visualizing, within a GIS environment, the modelling outputs of the \cws\cwversion~modelling platform. This extension currently operates under QGIS version \qgisversion.\\
+The visualization tool \cwv~was developed with the aim of visualizing the modelling outputs of the \cws\cwversion~modelling platform. This extension currently operates as a QGIS plugin under QGIS version \qgisversion and the same functionalities are as well accessible via API through jupyter notebook \label{sec-notebook-usage}.\\
 
 \cwv~is structured around various tools and features that assist in the calibration process of a \cawaqs~application and facilitate the visualization of time series and the spatial distribution of simulated hydrological variables.
+
+\cwv~is built on top of a standalone scientific backend HTAS \href{https://github.com/flipoyo/HydrologicalTwinAlphaSeries}{(HydrologicalTwinAlphaSeries)} and consumes it through a well-defined public interface. 
+
+\Cref{fig-cvz-ecosystem} situates the plug-in within the wider \cawaqs~toolchain.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{0_introduction/fig/cvz_ecosystem.png}
+    \caption{The \cwv~ecosystem --- position of the plug-in within the \cawaqs~toolchain.}
+    \label{fig-cvz-ecosystem}
+\end{figure}

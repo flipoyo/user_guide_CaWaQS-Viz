@@ -1,9 +1,10 @@
-\documentclass[11pt, english]{book}
+\documentclass[11pt, english, openany]{book}
 \usepackage{natbib}
 \usepackage[english]{babel}
 \selectlanguage{english}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
+\usepackage{lmodern}
 \usepackage{geometry}
 \usepackage{array}
 \usepackage{mathpazo}
@@ -203,24 +204,30 @@ Start of block with roman numbering
 \end{comment}
 
     \include{couverture/couverture_ENG}
-
+    \tableofcontents
     \include{0_introduction/introduction_ENG}
     \include{Nouveautes_ENG}
 
-    \tableofcontents
-    {}
-
-    \listoffigures \listoftables \lstlistoflistings
-
-    
-
     \mainmatter%
-    
+
+    \part{User Guide}
     \include{1_installation_requirements/Chap1_ENG}
     \include{2_application_user_guide/Chap2_ENG}
     \include{3_features/Chap3_ENG}
-    \include{4_application_scripts/Chap4_ENG}
-    \include{5_develloppeur/5_dev_ENG}
+    \include{4_use_from_notebook/Chap4_ENG}
+    \include{5_manual_configuration/manual_configuration_ENG}
+
+    \part{Developer Guide}
+    \include{6_key_concepts/key_concepts_ENG}
+    \include{7_architecture/architecture_ENG}
+    \include{8_development_workflow/development_workflow_ENG}
+    \include{9_developer_tooling/developer_tooling_ENG}
 
     \include{bibliographie_ENG}
+
+    \fancyhead[RE,LO]{\nouppercase{\textbf{\leftmark}}}
+
+    \cleardoublepage \markboth{\listfigurename}{}    \listoffigures
+    \cleardoublepage \markboth{\listtablename}{}     \listoftables
+    \cleardoublepage \markboth{\lstlistlistingname}{} \lstlistoflistings
 \end{document}

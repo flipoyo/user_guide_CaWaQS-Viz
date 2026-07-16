@@ -1,0 +1,81 @@
+\chapter{Utiliser \cwv~depuis un notebook (sans QGIS)}
+\label{chap-notebook}
+
+\renewcommand{\headrulewidth}{0.3pt}
+\fancyhead[LE]{\thepage} \fancyhead[RE]{\nouppercase{\textbf{\leftmark}}}
+\fancyhead[RO]{\thepage} \fancyhead[LO]{\nouppercase{\textbf{\rightmark}}}
+\fancyfoot[L,C,R]{}
+
+\setlength{\parindent}{0.35cm}
+
+\minitoc
+\newpage
+% ================================================================
+
+
+\section{Utiliser \cwv~depuis un notebook (sans QGIS) - pré-requis}
+\label{sec-notebook-usage}
+
+Le backend scientifique de \cwv, \script{HydrologicalTwinAlphaSeries} (HTAS), peut être piloté directement depuis un notebook Python, \textbf{sans QGIS}. Cela met en œuvre la même API publique que celle utilisée par les boîtes de dialogue QGIS, sur une véritable sortie de simulation \cawaqs. Au-delà de la commodité, ces notebooks garantissent que le backend reste indépendant de QGIS : tout ce qui s'exécute aujourd'hui depuis un simple notebook Python s'exécutera aussi sur le futur serveur \cwv~(\cref{chap-dev}). Les notebooks se trouvent sous \script{interface/notebooks/}.
+
+\begin{itemize}
+    \item une copie locale de \script{cawaqsviz} avec le sous-module \script{HydrologicalTwinAlphaSeries} renseigné (\cref{sec-install-pixi}) ;
+    \item un répertoire de sorties de simulation \cawaqs~lisible : les binaires sous le répertoire de sorties \cawaqs, le \json~\script{ConfigGeometry} livré avec la simulation, et les \script{shapefiles}/\script{geopackages} correspondants.
+\end{itemize}
+
+\section{Mettre en place l'environnement}
+
+La méthode recommandée est un environnement \script{pixi} dédié qui installe \script{jupyterlab} et une installation éditable de HTAS, mais \emph{pas} QGIS. Depuis la racine du dépôt :
+
+\begin{lstlisting}[language=bash]
+pixi install -e notebook          # cree l'environnement notebook (une fois)
+pixi run -e notebook notebook     # lance Jupyter Lab, enracine dans interface/notebooks/
+\end{lstlisting}
+
+Jupyter Lab s'ouvre dans votre navigateur ; double-cliquez sur un notebook et exécutez-le.
+
+\script{pixi} n'est qu'une commodité. HTAS est un paquet Python pur standard (pas de QGIS, pas de dépendances propres à conda), si bien que n'importe quel environnement virtuel disposant de \script{jupyterlab} convient :
+
+\begin{lstlisting}[language=bash]
+# venv + pip
+python -m venv .venv && source .venv/bin/activate
+pip install jupyterlab
+pip install -e external/HydrologicalTwinAlphaSeries
+jupyter lab interface/notebooks/
+\end{lstlisting}
+
+L'installation éditable de \script{external/HydrologicalTwinAlphaSeries} tire les dépendances d'exécution de HTAS (\script{geopandas}, \script{numpy}, \script{pandas}, \script{matplotlib}, \script{plotly}, \script{scipy}, \script{shapely}). La seule chose que \script{pixi} ajoute est un environnement entièrement figé et reproductible.
+
+\section{Exécuter sur un serveur distant}
+
+Lorsque la simulation réside sur un serveur de calcul, on souhaite que le notebook s'\emph{exécute} là-bas (à côté des données) mais qu'il s'\emph{édite} sur son ordinateur portable. La méthode recommandée est l'extension \textbf{Remote-SSH} de VS~Code, qui démarre le noyau sur le serveur et ouvre le \script{.ipynb} comme un onglet d'éditeur normal --- pas de navigateur, pas de jeton, pas de tunnel. Enregistrez l'environnement une fois, sur le serveur, depuis la racine du dépôt :
+
+\begin{lstlisting}[language=bash]
+pixi run -e notebook register-kernel
+\end{lstlisting}
+
+Cela fait apparaître un noyau nommé « CaWaQS (pixi notebook) » dans le sélecteur de noyaux de VS~Code (sélectionnez Kernel>Jupyter Kernel> CaWaQS (pixi notebook)). Vous vous connectez ensuite avec \gui{Remote-SSH: Connect to Host}, ouvrez le \script{.ipynb}, sélectionnez ce noyau et exécutez les cellules.
+
+\alertinfo{Si VS~Code n'est pas disponible, un tunnel SSH constitue une solution de repli fonctionnelle : démarrez \script{jupyter lab --no-browser} sur le serveur, redirigez le port avec \script{ssh -L 8888:localhost:8888}, et ouvrez l'URL affichée localement. Voir \script{interface/notebooks/README.md} pour la marche à suivre complète.}
+
+\section{Choisir un modèle}
+
+Le dossier \script{interface/notebooks/} livre \textbf{deux modèles}. Tous deux partagent la même cellule de paramètres et le même contrat \script{layer\_paths} --- ils ne diffèrent que par la surface HTAS qu'ils appellent :
+
+\begin{itemize}
+    \item \script{template\_client.ipynb} --- l'API grossière, calquée sur les boîtes de dialogue (\script{HydrologicalTwinClient}). Copiez-le pour \textbf{reproduire ce que fait une boîte de dialogue QGIS} (par ex. \script{budget\_barplot}, \script{spatial\_map\_aq}, \script{mask\_hyd\_boundary}). C'est également la surface qu'exposera un futur serveur HTTP ;
+    \item \script{template\_developer.ipynb} --- l'API de bas niveau, à base de verbes (\script{HydrologicalTwin}, verbes \script{fetch} / \script{mask} / \script{transform} / \script{render}). Copiez-le pour \textbf{construire votre propre pipeline}, inspecter des tableaux intermédiaires, ou appeler une primitive pas encore disponible dans le client.
+\end{itemize}
+
+Règle empirique : \emph{« un tracé qui correspond à une boîte de dialogue QGIS »} $\rightarrow$ \textbf{client} ; \emph{« ma propre chaîne d'opérations »} $\rightarrow$ \textbf{developer}. Les deux surfaces sont les deux \emph{portes d'entrée} de HTAS, décrites dans le chapitre développeur (\cref{sec-dev-gates}).
+
+\section{Flux de travail}
+
+\begin{enumerate}
+    \item \textbf{Copiez le modèle} --- ne modifiez jamais un modèle en place. Cliquez droit dessus $\rightarrow$ \gui{Duplicate} et renommez la copie (par ex. \script{seine\_2023.ipynb}).
+    \item \textbf{Ne modifiez que la cellule de paramètres.} Le reste du notebook est conçu pour s'exécuter sans modification.
+    \item \textbf{Effacez les sorties avant de committer.} Les sorties alourdissent les diffs et peuvent divulguer des chemins de votre machine. Depuis la racine du dépôt :
+\begin{lstlisting}[language=bash]
+jupyter nbconvert --clear-output --inplace interface/notebooks/<your_notebook>.ipynb
+\end{lstlisting}
+\end{enumerate}
