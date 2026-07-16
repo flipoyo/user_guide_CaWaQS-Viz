@@ -1,4 +1,4 @@
-\documentclass[11pt, french]{book}
+\documentclass[11pt, french, openany]{book}
 \usepackage{natbib}
 \usepackage[french]{babel}
 \selectlanguage{french}
@@ -50,7 +50,6 @@
 
 \providecommand{\tabularnewline}{\\}
 \usepackage{tabularx}
-\usepackage{babel}
 \usepackage{fancyhdr}
 \usepackage{color}
 \usepackage[usenames, dvipsnames, svgnames, table]{xcolor}
@@ -113,21 +112,21 @@ stringstyle=
 ]{!}}
 
 \lstdefinelanguage{json}{
-    basicstyle=\footnotesize\ttfamily,   % Police de base
-    commentstyle=\color{olive},          % Style des commentaires
-    keywordstyle=\color{blue},           % Style des mots-clés
-    numberstyle=\tiny\color{gray},       % Style des numéros de ligne
-    numbers=left,                        % Numérotation à gauche
-    stringstyle=\color{purple},          % Style des chaînes de caractères
-    breaklines=true,                     % Coupure automatique des lignes
-    showstringspaces=false,              % Pas d'espaces visibles dans les chaînes
-    tabsize=2,                           % Taille des tabulations
-    frame=lines,                         % Encadrement du code
-    captionpos=b,                        % Position de la légende en bas
-    aboveskip=15pt,                      % Espace avant le listing
-    belowskip=15pt,                      % Espace après le listing
-    comment=[l]{//},                     % Commentaires ligne avec //
-    morecomment=[s]{/*}{*/}              % Commentaires multi-lignes /* */
+    basicstyle=\footnotesize\ttfamily,
+    commentstyle=\color{olive},
+    keywordstyle=\color{blue},
+    numberstyle=\tiny\color{gray},
+    numbers=left,
+    stringstyle=\color{purple},
+    breaklines=true,
+    showstringspaces=false,
+    tabsize=2,
+    frame=lines,
+    captionpos=b,
+    aboveskip=15pt,
+    belowskip=15pt,
+    comment=[l]{//},
+    morecomment=[s]{/*}{*/}
 }
 
 % Pour les notes de rédaction dans le document
@@ -189,7 +188,6 @@ stringstyle=
 \newcommand{\cwuserguide}{\footnote{Notice CaWaQS : \href{https://gitlab.com/cawaqs/cawaqs/-/raw/main/docs/CaWaQS_350_Documentation.pdf?ref_type=heads}{https://gitlab.com/cawaqs/cawaqs/-/raw/main/docs/CaWaQS_350_Documentation.pdf?ref_type=heads}}}
 \makeatother
 
-\usepackage{babel}
 \makeatletter
 \addto\extrasfrench{%
 \providecommand{\og}{\leavevmode\flqq~}%
