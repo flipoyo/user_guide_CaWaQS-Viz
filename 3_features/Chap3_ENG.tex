@@ -554,3 +554,82 @@ Both the geometry layers and the values table carry a \texttt{faces} column: the
 \end{itemize}
 \texttt{faceN\_orient} is the $N$-th bordered direction; slots beyond \texttt{n\_faces} are left blank. \texttt{faceN\_outid} is filled \textbf{only} when that face's flux was sourced from the outside cell --- the \emph{coarse-inside} case, where the reported value came from the smaller outside neighbours, whose identifiers are then comma-joined into the field. It stays blank for a normal own-face read.
 
+
+\subsection{Using the extraction from a notebook}
+\label{sec-extract-notebook}
+The two families of the dialog are also available from a notebook (\cref{chap-notebook}) through the client API:
+\begin{itemize}
+    \item \script{client.mask\_internal\_values(...)} for the internal values;
+    \item \script{client.mask\_aq\_boundary(...)} for the aquifer boundary fluxes.
+\end{itemize}
+The dialog tickboxes are then replaced by explicit arguments.
+
+\subsubsection{Internal values: the \texttt{specs} tuples}
+\script{mask\_internal\_values} takes a \texttt{specs} list in which every entry is a 4-tuple \texttt{(compartment, outtype, param, unit)}:
+\begin{itemize}
+    \item \texttt{compartment}: \texttt{"WATBAL"}, \texttt{"HYD"} or \texttt{"AQ"}. The compartment must be loaded by the client (\texttt{IDS\_COMPARTMENTS}: 1 = \script{AQ}, 2 = \script{HYD}, 3 = \script{WATBAL});
+    \item \texttt{outtype}: the \cawaqs~binary the parameter is read from (\texttt{MB}, \texttt{Q} or \texttt{H});
+    \item \texttt{param}: a record name of that binary;
+    \item \texttt{unit}: the output unit of \emph{that} spec. Each tuple carries its own unit; there is no global unit argument.
+\end{itemize}
+\Cref{tab-extract-specs} lists every accepted combination.
+
+\begin{table}[H]
+    \centering
+    \footnotesize
+    \begin{tabular}{>{\raggedright}p{1.7cm}>{\raggedright}p{1.3cm}>{\raggedright}p{7.6cm}>{\raggedright\arraybackslash}p{2.6cm}}
+        \hline
+        \textbf{compartment} & \textbf{outtype} & \textbf{param} & \textbf{unit} \\
+        \hline
+        \texttt{WATBAL} & \texttt{MB} & \texttt{rain}, \texttt{etp}, \texttt{runoff}, \texttt{inf}, \texttt{etr}, \texttt{direct\_sout}, \texttt{stocksoil}, \texttt{stockinf}, \texttt{stockruiss}, \texttt{error} & \texttt{m3/s}, \texttt{m3/j} \\
+        \texttt{HYD} & \texttt{Q} & \texttt{discharge} & \texttt{m3/s}, \texttt{m3/j} \\
+        \texttt{HYD} & \texttt{H} & \texttt{water\_height}, \texttt{water\_level} & \texttt{m}, \texttt{cm} \\
+        \texttt{AQ} & \texttt{H} & \texttt{piezhead} & \texttt{m}, \texttt{cm} \\
+        \texttt{AQ} & \texttt{MB} & \texttt{h\_end}, \texttt{dv\_dt}, \texttt{flux\_x\_one}, \texttt{flux\_x\_two}, \texttt{flux\_y\_one}, \texttt{flux\_y\_two}, \texttt{flux\_z\_one}, \texttt{flux\_z\_two}, \texttt{recharge}, \texttt{uptake}, \texttt{flux\_direchlet}, \texttt{flux\_neumann}, \texttt{surf\_overflow}, \texttt{flux\_riv\_to\_aq}, \texttt{err}, \texttt{err\_rel} & \texttt{m3/s}, \texttt{m3/j} \\
+        \hline
+    \end{tabular}
+    \caption{Accepted \texttt{(compartment, outtype, param, unit)} tuples for \script{mask\_internal\_values}.}
+    \label{tab-extract-specs}
+\end{table}
+
+The dialog tickboxes of \cref{sec-extract-internal} map to the tuples as follows: \gui{Rainfall} = \texttt{rain}, \gui{Real EvapoTranspiration (ET)} = \texttt{etr}, \gui{Potential EvapoTranspiration (ET)} = \texttt{etp}, \gui{Infiltration} = \texttt{inf}, \gui{Runoff} = \texttt{runoff}, \gui{Flow} = \texttt{discharge}, \gui{Water Height} = \texttt{water\_height}, \gui{Recharge} = \texttt{("AQ", "MB", "recharge", ...)}. The other parameters of the table are available from the notebook only.
+
+\begin{lstlisting}[language=Python,caption={Example of \texttt{specs} for \script{mask\_internal\_values}.}]
+MASK_SPECS = [
+    ("WATBAL", "MB", "runoff",        "m3/j"),
+    ("HYD",    "Q",  "discharge",     "m3/s"),
+    ("HYD",    "H",  "water_level",   "m"),
+    ("AQ",     "MB", "recharge",      "m3/j"),
+    ("AQ",     "MB", "surf_overflow", "m3/j"),
+]
+\end{lstlisting}
+
+\alertwarning{A unit must belong to the right family. \texttt{water\_height}, \texttt{water\_level} and \texttt{piezhead} only accept \texttt{m} or \texttt{cm}; every other parameter only accepts \texttt{m3/s} or \texttt{m3/j}. A wrong pairing raises a \texttt{TypeError}. The tokens \texttt{m3/mois}, \texttt{m3}, \texttt{mm/j} and \texttt{l/s} are \textbf{not} accepted for internal values.}
+
+A few behaviours worth knowing:
+\begin{itemize}
+    \item \script{AQ} specs are resolved on the \emph{outcropping} (top) aquifer layer, not per layer. This is the right support for \texttt{recharge} and \texttt{surf\_overflow}. For the lateral fluxes across the polygon boundary, use \script{mask\_aq\_boundary} (below) instead of \texttt{flux\_x\_*}/\texttt{flux\_y\_*}, which would return every cell \emph{inside} the polygon;
+    \item \texttt{weighted=True} is ignored for length units (\texttt{m}, \texttt{cm}) and for all \script{HYD} specs: reaches always contribute their raw value;
+    \item \texttt{h\_end} and \texttt{err\_rel} are accepted with a volumetric unit, but are not physical fluxes: interpret them with care.
+\end{itemize}
+
+\subsubsection{Boundary values: \script{mask\_aq\_boundary}}
+\script{mask\_aq\_boundary} takes \textbf{no} \texttt{specs}: it always reads the four lateral face fluxes of the \texttt{AQ\_MB} binary (\texttt{flux\_x\_one} = west, \texttt{flux\_x\_two} = east, \texttt{flux\_y\_one} = south, \texttt{flux\_y\_two} = north) on the cells lying on the polygon boundary, split per aquifer layer. The only unit argument is \texttt{unit}:
+\begin{itemize}
+    \item \texttt{"m3/j"} (default): daily rate in \texttt{m\textsuperscript{3}/d} --- the \texttt{m\textsuperscript{3}/d} option of the dialog;
+    \item \texttt{"m3"}: calendar-month total volume, written to a \texttt{monthly\_values} table --- the \texttt{m\textsuperscript{3}/month} option of the dialog;
+    \item \texttt{"m3/mois"} (notebook only): an \emph{average-month} rate, i.e.\ every daily value multiplied by $86\,400 \times 365.25 / 12$, keeping one row per day.
+\end{itemize}
+
+\begin{lstlisting}[language=Python,caption={Example call of \script{mask\_aq\_boundary}.}]
+result = client.mask_aq_boundary(
+    polygon=polygon, polygon_crs=polygon_crs,
+    syear=START_YEAR, eyear=END_YEAR,
+    output_dir=CWV_output_directory, temp_dir=TEMP_DIR,
+    area_name="MY_AREA_AQ_BOUNDARY",
+    write_geopackage=True,
+    unit="m3",          # "m3/j" (default), "m3" or "m3/mois"
+)
+\end{lstlisting}
+
+\alertinfo{Both operations need the \script{AQ} meshes: every aquifer layer referenced by the geometry configuration must be listed in \texttt{layer\_paths}, and \texttt{1} must be included in \texttt{IDS\_COMPARTMENTS}. Otherwise the notebook cell prints \texttt{Skipped}.}
