@@ -82,6 +82,9 @@ Both templates share the same parameters cell and \script{layer\_paths} contract
     \item \textbf{Edit the parameters cell only.}
     \item \textbf{Clear outputs before committing} (they bloat diffs and leak local paths):
 \begin{lstlisting}[language=bash]
-pixi run -e notebook jupyter nbconvert --clear-output --inplace interface/notebooks/<your_notebook>.ipynb
+# With pixi (replace <your_notebook> with your notebook's name):
+pixi run -e notebook jupyter nbconvert --clear-output --inplace "interface/notebooks/<your_notebook>.ipynb"
+# Without pixi, with the virtual environment activated:
+jupyter nbconvert --clear-output --inplace "interface/notebooks/<your_notebook>.ipynb"
 \end{lstlisting}
 \end{enumerate}
