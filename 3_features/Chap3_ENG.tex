@@ -123,7 +123,7 @@ returns a GIS layer following the geometries of the observation resolution
 inherent to the analysed variable. Each field corresponds to a given statistical criterion. The selected statistical criteria are calculated over the period
 specified in the \gui{Period for calculating statistical criteria} section.\\
 
-\subsubsection{Statistical criteria calculated by the \gui{Statistical criteria} dialog box}
+\subsubsection*{Statistical criteria calculated by the \gui{Statistical criteria} dialog box}
 
 \textbf{\gui{Pbias} : Bias [$\%$]}
 \begin{equation*}
@@ -185,7 +185,7 @@ RMSE = \sqrt{\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
 
 The following criteria are calculated automatically: $\overline{y}$, $\overline{\hat{y}}$, $\frac{\overline{\hat{y}}}{\overline{y}}$, $\sigma y$,  $\sigma \hat{y}$, $\frac{\sigma \hat{y}}{\sigma y}$.
 
-\subsubsection{Output of the \gui{Statistical Criteria} dialog box}
+\subsubsection*{Output of the \gui{Statistical Criteria} dialog box}
 \label{sec_stats_crits}
 
 The dialog box generates statistical criteria: 
@@ -497,7 +497,7 @@ For the aquifer (\script{AQ}):
     \item \gui{Recharge}.
 \end{itemize}
 
-\subsubsection{The internal-values GeoPackage}
+\subsubsection*{The internal-values GeoPackage}
 \label{sec-extract-internal-gpkg}
 When the \gui{GeoPackage} box is ticked, all the checked compartments are bundled into one single file, \texttt{<area>\_InternalValues\_<years>.gpkg}, written in \texttt{OUTPUTS/}. It contains:
 \begin{itemize}
@@ -514,7 +514,7 @@ When the \gui{GeoPackage} box is ticked, all the checked compartments are bundle
     \item \gui{Hydraulic network} WIP: flow of the reaches crossing the boundaries of the mask.
 \end{itemize}
 
-\subsubsection{Unit and sign convention}
+\subsubsection*{Unit and sign convention}
 The \gui{Subsurface flows} checkbox has its own unit combo box, offering two options that differ in \emph{nature}, not merely in scale:
 \begin{itemize}
     \item \texttt{m\textsuperscript{3}/d} (default): a daily flow \textbf{rate} (the raw \texttt{m\textsuperscript{3}/s} multiplied by 86\,400), giving one value per day;
@@ -525,10 +525,10 @@ The \gui{Subsurface flows} checkbox has its own unit combo box, offering two opt
 
 The sign convention travels with the data --- in the CSV header line and in the GeoPackage \texttt{provenance} table: \textbf{positive means a flux entering the cell}.
 
-\subsubsection{Default mode: the face-flux CSV}
+\subsubsection*{Default mode: the face-flux CSV}
 With the \gui{GeoPackage} box unticked, the boundary fluxes are written to a loose face-flux CSV. Faces are named according to the convention \texttt{nCell(ID\_ABS)\_direction\_unit}, for example \texttt{3323\_west\_m3d}. This is the \textbf{only} mode that exposes the per-face \emph{gross} detail, i.e.\ each face's own value taken separately.
 
-\subsubsection{GeoPackage mode: the AQ-boundary GeoPackage}
+\subsubsection*{GeoPackage mode: the AQ-boundary GeoPackage}
 \label{sec-extract-boundary-gpkg}
 The AQ-boundary GeoPackage is exclusive in the same way as the internal-values one: when the box is ticked, a single \texttt{<area>\_AqBoundary\_<years>.gpkg} is written \emph{instead of} the loose face-flux CSV. It carries:
 \begin{itemize}
@@ -555,16 +555,23 @@ Both the geometry layers and the values table carry a \texttt{faces} column: the
 \texttt{faceN\_orient} is the $N$-th bordered direction; slots beyond \texttt{n\_faces} are left blank. \texttt{faceN\_outid} is filled \textbf{only} when that face's flux was sourced from the outside cell --- the \emph{coarse-inside} case, where the reported value came from the smaller outside neighbours, whose identifiers are then comma-joined into the field. It stays blank for a normal own-face read.
 
 
-\subsection{Using the extraction from a notebook}
+\section{Extraction of Results in a Polygon from a Notebook}
 \label{sec-extract-notebook}
-The two families of the dialog are also available from a notebook (\cref{chap-notebook}) through the client API:
+The two families of the \script{Extract Data from a sub area} dialog (\cref{sec-extract-area}) are also available from a notebook (\cref{chap-notebook}) through the client API:
 \begin{itemize}
     \item \script{client.mask\_internal\_values(...)} for the internal values;
     \item \script{client.mask\_aq\_boundary(...)} for the aquifer boundary fluxes.
 \end{itemize}
 The dialog tickboxes are then replaced by explicit arguments.
 
-\subsubsection{Internal values: the \texttt{specs} tuples}
+In \texttt{interface/notebooks/template\_client.ipynb}, the two operations have their own sections and their own parameters, so they cannot be confused:
+\begin{itemize}
+    \item \texttt{POLYGON\_PATH} is shared by both operations;
+    \item section 11 (\script{mask\_internal\_values}) reads the \texttt{MASK\_INTERNAL\_*} parameters: \texttt{MASK\_INTERNAL\_SPECS}, \texttt{MASK\_INTERNAL\_AREA\_NAME}, \texttt{MASK\_INTERNAL\_WRITE\_GEOPACKAGE} and \texttt{MASK\_INTERNAL\_WEIGHTED};
+    \item section 12 (\script{mask\_aq\_boundary}) reads the \texttt{MASK\_AQ\_BOUNDARY\_*} parameters: \texttt{MASK\_AQ\_BOUNDARY\_AREA\_NAME}, \texttt{MASK\_AQ\_BOUNDARY\_WRITE\_GEOPACKAGE} and \texttt{MASK\_AQ\_BOUNDARY\_UNIT}.
+\end{itemize}
+
+\subsection{Internal values: the \texttt{specs} tuples}
 \script{mask\_internal\_values} takes a \texttt{specs} list in which every entry is a 4-tuple \texttt{(compartment, outtype, param, unit)}:
 \begin{itemize}
     \item \texttt{compartment}: \texttt{"WATBAL"}, \texttt{"HYD"} or \texttt{"AQ"}. The compartment must be loaded by the client (\texttt{IDS\_COMPARTMENTS}: 1 = \script{AQ}, 2 = \script{HYD}, 3 = \script{WATBAL});
@@ -595,7 +602,7 @@ The dialog tickboxes are then replaced by explicit arguments.
 The dialog tickboxes of \cref{sec-extract-internal} map to the tuples as follows: \gui{Rainfall} = \texttt{rain}, \gui{Real EvapoTranspiration (ET)} = \texttt{etr}, \gui{Potential EvapoTranspiration (ET)} = \texttt{etp}, \gui{Infiltration} = \texttt{inf}, \gui{Runoff} = \texttt{runoff}, \gui{Flow} = \texttt{discharge}, \gui{Water Height} = \texttt{water\_height}, \gui{Recharge} = \texttt{("AQ", "MB", "recharge", ...)}. The other parameters of the table are available from the notebook only.
 
 \begin{lstlisting}[language=Python,caption={Example of \texttt{specs} for \script{mask\_internal\_values}.}]
-MASK_SPECS = [
+MASK_INTERNAL_SPECS = [
     ("WATBAL", "MB", "runoff",        "m3/j"),
     ("HYD",    "Q",  "discharge",     "m3/s"),
     ("HYD",    "H",  "water_level",   "m"),
@@ -613,22 +620,38 @@ A few behaviours worth knowing:
     \item \texttt{h\_end} and \texttt{err\_rel} are accepted with a volumetric unit, but are not physical fluxes: interpret them with care.
 \end{itemize}
 
-\subsubsection{Boundary values: \script{mask\_aq\_boundary}}
-\script{mask\_aq\_boundary} takes \textbf{no} \texttt{specs}: it always reads the four lateral face fluxes of the \texttt{AQ\_MB} binary (\texttt{flux\_x\_one} = west, \texttt{flux\_x\_two} = east, \texttt{flux\_y\_one} = south, \texttt{flux\_y\_two} = north) on the cells lying on the polygon boundary, split per aquifer layer. The only unit argument is \texttt{unit}:
+\subsection{Boundary values: \script{mask\_aq\_boundary}}
+\script{mask\_aq\_boundary} takes \textbf{no} \texttt{specs} (it never reads \texttt{MASK\_INTERNAL\_SPECS}): it always reads the four lateral face fluxes of the \texttt{AQ\_MB} binary (\texttt{flux\_x\_one} = west, \texttt{flux\_x\_two} = east, \texttt{flux\_y\_one} = south, \texttt{flux\_y\_two} = north) on the cells lying on the polygon boundary, split per aquifer layer. The only unit argument is \texttt{unit}:
 \begin{itemize}
     \item \texttt{"m3/j"} (default): daily rate in \texttt{m\textsuperscript{3}/d} --- the \texttt{m\textsuperscript{3}/d} option of the dialog;
     \item \texttt{"m3"}: calendar-month total volume, written to a \texttt{monthly\_values} table --- the \texttt{m\textsuperscript{3}/month} option of the dialog;
     \item \texttt{"m3/mois"} (notebook only): an \emph{average-month} rate, i.e.\ every daily value multiplied by $86\,400 \times 365.25 / 12$, keeping one row per day.
 \end{itemize}
 
+\texttt{write\_geopackage} selects one of two \textbf{mutually exclusive} output modes, as in the dialog:
+\begin{itemize}
+    \item \texttt{True}: the single GeoPackage \texttt{<area\_name>\_AqBoundary\_<syear>\_<eyear>.gpkg} is the \emph{only} artefact. It holds one \emph{net} flux series per boundary cell;
+    \item \texttt{False}: only the per-(cell, direction) face-flux CSV is written. This is the only mode that keeps the \emph{gross} flux of every face.
+\end{itemize}
+
+The returned \texttt{MaskAqBoundaryResult} carries one entry per aquifer layer reached by the polygon boundary (\texttt{id\_layer}, \texttt{layer\_name} and the boundary cells \texttt{gdf}), plus the list of written \texttt{artefacts}.
+
+\begin{lstlisting}[language=Python,caption={Parameters of \script{mask\_aq\_boundary} in the template notebook.}]
+POLYGON_PATH = "/abs/path/to/mask_polygon.gpkg"    # shared with mask_internal_values
+
+MASK_AQ_BOUNDARY_AREA_NAME        = "MY_AREA_AQ_BOUNDARY"
+MASK_AQ_BOUNDARY_WRITE_GEOPACKAGE = True    # True: .gpkg only (net) / False: CSV only (gross)
+MASK_AQ_BOUNDARY_UNIT             = "m3/j"  # "m3/j" (default), "m3" or "m3/mois"
+\end{lstlisting}
+
 \begin{lstlisting}[language=Python,caption={Example call of \script{mask\_aq\_boundary}.}]
 result = client.mask_aq_boundary(
     polygon=polygon, polygon_crs=polygon_crs,
     syear=START_YEAR, eyear=END_YEAR,
     output_dir=CWV_output_directory, temp_dir=TEMP_DIR,
-    area_name="MY_AREA_AQ_BOUNDARY",
-    write_geopackage=True,
-    unit="m3",          # "m3/j" (default), "m3" or "m3/mois"
+    area_name=MASK_AQ_BOUNDARY_AREA_NAME,
+    write_geopackage=MASK_AQ_BOUNDARY_WRITE_GEOPACKAGE,
+    unit=MASK_AQ_BOUNDARY_UNIT,
 )
 \end{lstlisting}
 
